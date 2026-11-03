@@ -2,171 +2,184 @@
  * ─────────────────────────────────────────────────────────────────────────────
  *  THE ROOM: all content lives here.
  *
- *  Anything that starts with "✎" is a placeholder for you to fill in. The UI
- *  shows placeholders with a dashed outline so you can spot them on the page.
- *
- *  Files: put PDFs in /public/papers and your CV in /public/cv, then point the
- *  `pdf` / `cvUrl` fields at them, e.g. "papers/rag-poisoning.pdf".
+ *  Anything that starts with "✎" is a placeholder, and the UI shows it with a
+ *  dashed outline. Files go in /public (papers/, cv/, photos/) and are
+ *  referenced without a leading slash, e.g. "papers/aegisrag.pdf".
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
 export type Link = { label: string; href: string }
 
-export type PaperStatus = 'published' | 'preprint' | 'in-progress' | 'notes' | 'read' | 'planned'
+export type Kind = 'paper' | 'notes' | 'reference' | 'project' | 'security' | 'experience' | 'achievement' | 'idea'
 
-export type Paper = {
+export type Item = {
   id: string
   title: string
   shelf: ShelfId
-  status: PaperStatus
+  kind: Kind
   year: string
-  venue?: string
-  authors?: string
-  abstract: string
+  subtitle?: string
+  body: string
+  points?: string[]
   tags: string[]
+  authors?: string
+  venue?: string
+  /** page count; page images live at papers/<pdf-name>-p-N.jpg */
+  pages?: number
   pdf?: string
   links?: Link[]
-  /** spine colour */
   color: string
 }
 
-export type ShelfId = 'security' | 'formal' | 'markets' | 'agents' | 'sport'
+export type ShelfId = 'research' | 'security' | 'builds' | 'markets' | 'curious'
 
 export const shelves: Record<ShelfId, { label: string; blurb: string }> = {
-  security: { label: 'AI Security', blurb: 'Attacking and defending retrieval-augmented systems.' },
-  formal: { label: 'Formal Methods', blurb: 'Runtime verification and monitors for autonomous agents.' },
-  markets: { label: 'Markets & ML', blurb: 'Quantitative finance, forecasting and learning systems.' },
-  agents: { label: 'Multi-Agent Systems', blurb: 'Swarms, coordination and emergent behaviour.' },
-  sport: { label: 'Sport Analytics', blurb: 'Where basketball meets data.' },
+  research: { label: 'Research', blurb: 'AegisRAG: poisoning, detection and runtime verification.' },
+  security: { label: 'Red Team', blurb: 'Hack The Box, TryHackMe and things I broke on purpose.' },
+  builds: { label: 'Things I Built', blurb: 'Systems, tools and products, from brief to launch.' },
+  markets: { label: 'Markets & ML', blurb: 'Adaptive models, trading research and on-chain risk.' },
+  curious: { label: 'Ideas & Curiosities', blurb: 'Papers I want to write, and things I can’t stop thinking about.' },
+}
+
+export const KIND_LABEL: Record<Kind, string> = {
+  paper: 'Paper',
+  notes: 'Lab notes',
+  reference: 'Built on',
+  project: 'Project',
+  security: 'Security',
+  experience: 'Experience',
+  achievement: 'Achievement',
+  idea: 'Idea',
 }
 
 const BLOG = 'https://aliyousefi9403.github.io'
-const GH = 'https://github.com/Aliyousefi9403'
+const PRIVATE = { label: 'Walkthrough on request', href: 'mailto:yousefi.ali@icloud.com?subject=Walkthrough%20request' }
 
 export const profile = {
   name: 'Ali Yousefi',
-  role: 'Computer Science · AI Security Research',
-  tagline: 'Research, systems and basketball.',
+  role: 'AI Security · Applied AI',
   location: 'London, UK',
   photo: 'photos/profile.jpg',
   bio: [
-    'I’m a final-year BSc Computer Science student at City St George’s, University of London.',
-    'My dissertation, AegisRAG, studies how word-substitution attacks poison the knowledge base of a cybersecurity RAG system, and how to catch them with relative entropy and a runtime verification monitor. I’m preparing it as an arXiv preprint with my supervisors, Dr Hafizul Asad and Dr Nikos Komninos.',
-    '✎ One sentence on what you’re looking for next (MSc, research role, internship…).',
+    'Final-year Computer Science student at City St George’s, University of London, focused on AI security and applied AI.',
+    'My lead project is AegisRAG, research on detecting knowledge-base poisoning in RAG systems, which I’ve written up as a preprint with Dr Hafizul Asad and Dr Nikos Komninos. Alongside it I’m on the Hack The Box AI Red Teamer path and studying for CompTIA Security+.',
+    'I’m an AI Engineering Intern at Adaptive Swarm, and I speak English and Turkish fluently and Persian natively.',
   ],
   email: 'yousefi.ali@icloud.com',
-  cvUrl: '✎ cv/Ali_Yousefi_CV.pdf',
+  cvUrl: 'cv/Ali_Yousefi_CV.pdf',
+  cvImage: 'cv/cv-page-1.png',
   links: [
-    { label: 'GitHub', href: GH },
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/ali-yousefi-6806b3268/' },
     { label: 'Research blog', href: BLOG },
-    { label: 'LinkedIn', href: '✎ https://linkedin.com/in/your-handle' },
+    { label: 'GitHub', href: 'https://github.com/Aliyousefi9403' },
   ] as Link[],
   education: [
-    { what: 'BSc Computer Science', where: 'City St George’s, University of London', when: '✎ 20XX to 2027' },
+    { what: 'BSc (Hons) Computer Science', where: 'City St George’s, University of London', when: '2024 to 2027 · predicted 2:1 or above' },
   ],
-  skills: ['Python', 'LangChain', 'Qdrant', 'RAG', 'Adversarial ML', 'Runtime verification', 'LTL', 'FastAPI', 'Next.js', 'Three.js'],
+  experience: [
+    { what: 'AI Engineering Intern', where: 'Adaptive Swarm', when: '2026 to present' },
+    { what: 'Blockchain Security & Market Analyst', where: 'Batis Group', when: '2025 to May 2026' },
+    { what: 'Freelance Web Developer · Int’l B2B Sales', where: 'Kaveh Float', when: '2022 to 2025' },
+  ],
+  skills: ['LLM red teaming', 'RAG adversarial testing', 'Python', 'FastAPI', 'Qdrant', 'Next.js', 'DuckDB', 'AWS', 'Docker', 'C#', 'Java', 'Wireshark', 'gobuster'],
+  rightToWork: 'Eligible for a placement year now, and for the UK Graduate visa (18 months, no sponsorship) after graduating in 2027.',
 }
 
-// ── Library ──────────────────────────────────────────────────────────────────
-// Real work first. "notes" = blog posts, "read" = papers you built on,
-// "planned" = ideas (ghosted spines). Promote ideas as you write them.
-export const papers: Paper[] = [
+// ── The library ──────────────────────────────────────────────────────────────
+export const items: Item[] = [
+  // Research
   {
     id: 'aegisrag',
-    title: 'Detecting and Mitigating Adversarial Poisoning in RAG-Based Cybersecurity Systems',
-    shelf: 'security',
-    status: 'in-progress',
+    title: 'Reading the Poison',
+    subtitle: 'Relative-Entropy Detection of Word-Substitution Poisoning in a Cybersecurity RAG Knowledge Base',
+    shelf: 'research',
+    kind: 'paper',
     year: '2026',
-    venue: 'arXiv preprint in preparation',
-    authors: 'Ali Yousefi, with Dr Hafizul Asad and Dr Nikos Komninos',
-    abstract:
-      'Most RAG poisoning work injects new malicious passages. AegisRAG studies a quieter attack: editing passages that are already in the knowledge base by swapping words for synonyms (PWWS, TextFooler). On a cybersecurity RAG built from MITRE ATT&CK and CAPEC (18 documents, 200 passages, 14 attack types) with a reviewed 44-question benchmark, poisoning drops judged correctness from 0.714 to 0.555, mostly by removing evidence rather than planting misinformation. A contextual “synonym gap” detector, derived from one term of the KL divergence with a small language model as reference, reaches AUROC 0.95 on PWWS while staying near chance on a layout-only control. A likelihood-constrained adaptive attacker succeeds on 0 of 57 sections. Finally, a runtime-verification monitor with LTL rules and quarantine memory cuts exposure to edited text from 41% to 26%, and with a trusted MITRE fallback lifts correctness to 0.786.',
-    tags: ['RAG poisoning', 'relative entropy', 'runtime verification', 'adversarial ML'],
-    pdf: '✎ papers/aegisrag.pdf',
-    links: [{ label: 'Code: AegisRAG', href: `${GH}/dissertation-RAG` }, { label: 'Research blog', href: BLOG }],
+    authors: 'Ali Yousefi, Hafizul Asad and Nikos Komninos',
+    venue: 'Preprint · arXiv submission · City St George’s, University of London',
+    body: 'In a RAG system the knowledge base is part of what has to be trusted. We study an attacker who edits existing passages by swapping words for synonyms (PWWS, TextFooler) in a small cybersecurity RAG system built from MITRE ATT&CK and CAPEC. Poisoning lowered judged answer correctness from 0.714 to 0.555, mostly through lost evidence and refusals rather than false statements. A single term of the relative entropy, the log-ratio between a word and its most probable synonym, reached an AUROC of 0.95 with a small language model as reference, while staying near chance on a layout-only control. An attacker that also had to keep each passage as probable under the language model did not succeed on any of 57 sections. A runtime monitor with a quarantine memory reduced exposure to edited text from 0.41 to 0.26; allowed to add the trusted MITRE entry, correctness rose to 0.786.',
+    points: [
+      'Synonym-swap poisoning cuts answer correctness by 22% (0.714 → 0.555), mainly by displacing evidence.',
+      'The synonym-gap detector reaches 0.95 AUROC and names the swapped word it suspects.',
+      'Filtering halves poisoned text reaching the generator (41% → 20%).',
+      'A likelihood-constrained adaptive attacker succeeded on 0 of 57 sections.',
+      'Runtime monitor: exposure 0.41 → 0.26; with the trusted MITRE fallback, correctness 0.786.',
+    ],
+    tags: ['RAG poisoning', 'relative entropy', 'adversarial text', 'runtime verification'],
+    pages: 7,
+    pdf: 'papers/aegisrag.pdf',
+    links: [{ label: 'The blog series', href: BLOG }],
     color: '#7a2230',
   },
   {
     id: 'aegis-rv',
-    title: 'A Runtime Monitor That Remembers What Fooled It',
-    shelf: 'formal',
-    status: 'in-progress',
+    title: 'The Monitor That Remembers',
+    subtitle: 'AegisRAG, part II: runtime verification (paper §V-G)',
+    shelf: 'research',
+    kind: 'paper',
     year: '2026',
-    venue: 'AegisRAG, chapter on runtime verification',
-    authors: 'Ali Yousefi',
-    abstract:
-      'Three rules checked on every answer before the user sees it, against SHA-256-pinned MITRE STIX data the attacker cannot edit. φ1: no rare words copied from retrieved passages that MITRE does not use. φ2: no refusal when MITRE covers the attack. φ3 (LTL): G(quarantined(p) → G ¬inContext(p)). Violations blame passages, write them to an append-only memory, and trigger at most two re-asks. Exposure to edited text drops 41% → 26% (PWWS) and 82% → 58% (TextFooler); with the trusted fallback, correctness reaches 0.786 and refusals fall from 45 to 7.',
-    tags: ['LTL', 'runtime verification', 'monitors', 'MITRE ATT&CK'],
-    links: [{ label: 'Code', href: `${GH}/dissertation-RAG` }],
+    body: 'Filters forget, and they throw away the evidence with the poison. This part of AegisRAG checks every answer against SHA-256-pinned MITRE data before the user sees it, using three temporal rules, and remembers the passages that misled it.',
+    points: ['Exposure to edited text 41% → 26% (PWWS), 82% → 58% (TextFooler).', 'Wrong answers 2 → 0.', 'With a trusted MITRE fallback, correctness 0.786 and refusals 45 → 7.'],
+    tags: ['LTL', 'monitors', 'MITRE ATT&CK'],
+    pages: 7,
+    pdf: 'papers/aegisrag.pdf',
     color: '#1d4a5a',
   },
-  // Lab notebooks: your blog posts
-  { id: 'note-1', title: 'Lab Notes I: Choosing RAG Poisoning', shelf: 'security', status: 'notes', year: 'Jul 2026', abstract: 'How a reading list of nine IEEE papers and one conversation turned a coursework project into a research question, and the gap it targets: Ikbarieh et al. leave defences as future work.', tags: ['journal'], links: [{ label: 'Read the post', href: `${BLOG}/posts/week-1-choosing-a-dissertation-topic/` }], color: '#3b3f4a' },
-  { id: 'note-2', title: 'Lab Notes II: The Baseline RAG', shelf: 'security', status: 'notes', year: 'Jul 2026', abstract: 'Qdrant, all-MiniLM-L6-v2 and LangChain: the first end-to-end retrieval pipeline and the decisions behind it.', tags: ['journal', 'build'], links: [{ label: 'Read the post', href: `${BLOG}/posts/week-1-building-the-baseline-rag/` }], color: '#41454f' },
-  { id: 'note-3', title: 'Lab Notes III: Full Pipeline', shelf: 'security', status: 'notes', year: 'Aug 2026', abstract: 'A source-first knowledge base built from MITRE ATT&CK and CAPEC STIX data, a FastAPI + Next.js stack, and a working PWWS attack.', tags: ['journal', 'milestone'], links: [{ label: 'Read the post', href: `${BLOG}/posts/week-2-milestone-full-rag-pipeline/` }], color: '#383c46' },
-  { id: 'note-4', title: 'Lab Notes IV: From Demo to Paper', shelf: 'security', status: 'notes', year: 'Nov 2026', abstract: 'Three months in: the experiment, the attack, the detector, the adaptive attackers and the monitor, one paragraph each.', tags: ['journal', 'results'], links: [{ label: 'Read the post', href: `${BLOG}/posts/three-months-in-from-a-rag-demo-to-a-paper/` }], color: '#444852' },
-  { id: 'note-5', title: 'Lab Notes V: Catching the Poison', shelf: 'formal', status: 'notes', year: 'Nov 2026', abstract: 'Why whole-passage KL divergence fails and how one term of the sum, the synonym gap, reaches AUROC 0.95.', tags: ['journal', 'detection'], links: [{ label: 'Research blog', href: BLOG }], color: '#2c3d44' },
-  // Papers you built on
-  { id: 'read-1', title: 'RAG-Targeted Adversarial Attack on LLM-Based Threat Detection', shelf: 'security', status: 'read', year: '2025', venue: 'IEEE BigData 2025', authors: 'Ikbarieh, Aryal & Gupta', abstract: 'The paper AegisRAG builds on: meaning-preserving word-level edits to a RAG knowledge base degrade LLM security recommendations. Defences are left as future work, which is the gap AegisRAG fills.', tags: ['reference'], color: '#8a7a5a' },
-  { id: 'read-2', title: 'Generating Natural Language Adversarial Examples (PWWS)', shelf: 'security', status: 'read', year: '2019', venue: 'ACL 2019', authors: 'Ren, Deng, He & Che', abstract: 'Probability Weighted Word Saliency: the synonym-substitution attack used to poison the knowledge base.', tags: ['reference'], links: [{ label: 'ACL Anthology', href: 'https://aclanthology.org/P19-1103/' }], color: '#7b6d50' },
-  { id: 'read-3', title: 'Is BERT Really Robust? (TextFooler)', shelf: 'security', status: 'read', year: '2020', venue: 'AAAI 2020', authors: 'Jin, Jin, Zhou & Szolovits', abstract: 'The second word-level attack evaluated against the detector and the monitor.', tags: ['reference'], links: [{ label: 'arXiv', href: 'https://arxiv.org/abs/1907.11932' }], color: '#6f6348' },
+  { id: 'note-1', title: 'Lab Notes I', subtitle: 'Choosing RAG poisoning', shelf: 'research', kind: 'notes', year: 'Jul 2026', body: 'How a reading list of nine IEEE papers turned a coursework project into a research question, and the gap it targets.', tags: ['journal'], links: [{ label: 'Read the post', href: `${BLOG}/posts/week-1-choosing-a-dissertation-topic/` }], color: '#3b3f4a' },
+  { id: 'note-2', title: 'Lab Notes II', subtitle: 'The baseline RAG', shelf: 'research', kind: 'notes', year: 'Jul 2026', body: 'Qdrant, all-MiniLM-L6-v2 and LangChain: the first end-to-end retrieval pipeline and the decisions behind it.', tags: ['journal'], links: [{ label: 'Read the post', href: `${BLOG}/posts/week-1-building-the-baseline-rag/` }], color: '#41454f' },
+  { id: 'note-3', title: 'Lab Notes III', subtitle: 'The full pipeline', shelf: 'research', kind: 'notes', year: 'Aug 2026', body: 'A source-first knowledge base from MITRE ATT&CK and CAPEC STIX data, a FastAPI + Next.js stack, and a working PWWS attack.', tags: ['journal'], links: [{ label: 'Read the post', href: `${BLOG}/posts/week-2-milestone-full-rag-pipeline/` }], color: '#383c46' },
+  { id: 'note-4', title: 'Lab Notes IV', subtitle: 'From demo to paper', shelf: 'research', kind: 'notes', year: 'Nov 2026', body: 'Three months in: the experiment, the attack, the detector, the adaptive attackers and the monitor.', tags: ['journal'], links: [{ label: 'Read the post', href: `${BLOG}/posts/three-months-in-from-a-rag-demo-to-a-paper/` }], color: '#444852' },
+  { id: 'ref-1', title: 'RAG-Targeted Adversarial Attack', subtitle: 'Ikbarieh, Aryal & Gupta · IEEE BigData 2025', shelf: 'research', kind: 'reference', year: '2025', body: 'The paper AegisRAG builds on. It shows word-level edits to a RAG knowledge base degrade LLM security advice, and leaves defences as future work.', tags: ['reference'], color: '#8a7a5a' },
+  { id: 'ref-2', title: 'PWWS', subtitle: 'Ren et al. · ACL 2019', shelf: 'research', kind: 'reference', year: '2019', body: 'Probability Weighted Word Saliency: the synonym-substitution attack used to poison the knowledge base.', tags: ['reference'], links: [{ label: 'ACL Anthology', href: 'https://aclanthology.org/P19-1103/' }], color: '#7b6d50' },
 
-  // Systems write-ups (fill as you write them)
-  { id: 'quant-agents', title: '✎ An Agentic Quant Fund', shelf: 'markets', status: 'in-progress', year: '✎', authors: 'Ali Yousefi', abstract: '✎ Write-up of the multi-agent quant fund: research, signal, risk and execution agents.', tags: ['multi-agent', 'trading'], color: '#2d5a3d' },
-  { id: 'swarm-learning', title: '✎ Notes from Adaptive Swarm', shelf: 'agents', status: 'in-progress', year: '✎', authors: 'Ali Yousefi', abstract: '✎ A technical report on what you built and learned during the internship.', tags: ['swarm', 'ML', 'internship'], color: '#5d4790' },
+  // Red team
+  { id: 'htb', title: 'Hack The Box', subtitle: 'AI Red Teamer path · primary focus', shelf: 'security', kind: 'security', year: 'due Jan 2027', body: 'Practising prompt injection, data poisoning and output manipulation against LLM systems. It feeds directly into AegisRAG.', tags: ['prompt injection', 'data poisoning', 'LLM red teaming'], color: '#2f6b2a' },
+  { id: 'secplus', title: 'CompTIA Security+', subtitle: 'SY0-701 · in progress', shelf: 'security', kind: 'security', year: 'due Jan 2027', body: 'The broad foundation: threats, architecture, operations and governance.', tags: ['certification'], color: '#9b2a2a' },
+  { id: 'thm-red', title: 'TryHackMe Red Teaming', subtitle: 'In progress · Cyber Security 101 completed', shelf: 'security', kind: 'security', year: '2026', body: 'Completed the Cyber Security 101 path plus web and cloud exploitation rooms; the Red Teaming path is in progress.', tags: ['offensive security'], color: '#a3262d' },
+  { id: 'git-leak', title: 'The Exposed .git', subtitle: 'Web exploitation write-up', shelf: 'security', kind: 'security', year: '2026', body: 'Found an exposed .git directory on a Flask host with gobuster, then rebuilt the application source from loose git objects.', tags: ['gobuster', 'git forensics', 'web'], color: '#3b3f2a' },
+  { id: 'cognito', title: 'Anonymous to DynamoDB', subtitle: 'Cloud exploitation write-up', shelf: 'security', kind: 'security', year: '2026', body: 'Abused an AWS Cognito identity pool that issued credentials to anonymous users, and used them to enumerate an over-permissive DynamoDB table.', tags: ['AWS', 'Cognito', 'IAM'], color: '#a26a1f' },
+  { id: 'rugpull', title: 'Rug-Pull Screening', subtitle: 'Batis Group · Blockchain Security & Market Analyst', shelf: 'security', kind: 'experience', year: '2025–26', body: 'Screened Ethereum and Tron tokens for rug-pull risk by checking ownership, mint rights, liquidity locks and holder spread. I also owned the company’s wallet and key management, and redesigned storage and recovery to remove single points of failure.', tags: ['Ethereum', 'Tron', 'Slither', 'key management'], color: '#4a3a7a' },
 
-  // ── Ideas: future books for the shelf (see README for the full list) ──────
-  { id: 'idea-1', title: 'Cross-Lingual RAG Poisoning', shelf: 'security', status: 'planned', year: '', abstract: 'Do poisoned passages written in one language hijack answers to questions asked in another? Multilingual embedders make this likely and under-studied.', tags: ['multilingual', 'RAG'], color: '#3a2a2e' },
-  { id: 'idea-2', title: 'Poisoning Agent Memory', shelf: 'security', status: 'planned', year: '', abstract: 'Long-term memory stores in agents are a RAG corpus the attacker can write to. Measure persistence and blast radius of a single poisoned memory.', tags: ['agents', 'memory'], color: '#3a2a2e' },
-  { id: 'idea-3', title: 'Certified Retrieval Bounds', shelf: 'security', status: 'planned', year: '', abstract: 'How many poisoned passages can a top-k retriever tolerate before the answer flips? Provable bounds via isolate-then-aggregate.', tags: ['robustness', 'certification'], color: '#3a2a2e' },
-  { id: 'idea-4', title: 'Shielding Tool-Using Agents', shelf: 'formal', status: 'planned', year: '', abstract: 'Synthesise shields from temporal specs that block unsafe tool calls before they execute, and measure task-success cost.', tags: ['shields', 'tool use'], color: '#20343c' },
-  { id: 'idea-5', title: 'Monitorability of LLM Specs', shelf: 'formal', status: 'planned', year: '', abstract: 'Which natural-language safety policies can be turned into monitorable temporal properties at all? A taxonomy and an LLM-assisted translator.', tags: ['LTL', 'NL-to-spec'], color: '#20343c' },
-  { id: 'idea-6', title: 'Monitors for Trading Agents', shelf: 'formal', status: 'planned', year: '', abstract: 'Bridge the quant fund and RV work: compliance rules (position limits, wash trades) as runtime monitors over agent order flow.', tags: ['compliance', 'finance'], color: '#20343c' },
-  { id: 'idea-7', title: 'LLM Sentiment vs. Price Drift', shelf: 'markets', status: 'planned', year: '', abstract: 'Does LLM-scored news sentiment predict post-announcement drift once you control for look-ahead leakage in the model itself?', tags: ['NLP', 'alpha'], color: '#233d2c' },
-  { id: 'idea-8', title: 'Adversarial News for Trading Bots', shelf: 'markets', status: 'planned', year: '', abstract: 'RAG poisoning meets markets: can a fake press release steer an agentic trader? Threat model and defences.', tags: ['security', 'markets'], color: '#233d2c' },
-  { id: 'idea-9', title: 'Emergent Collusion in Agent Markets', shelf: 'agents', status: 'planned', year: '', abstract: 'Do independently trained LLM market-makers learn to keep spreads wide without talking to each other?', tags: ['game theory', 'LLM'], color: '#33284a' },
-  { id: 'idea-10', title: 'Byzantine Agents in a Swarm', shelf: 'agents', status: 'planned', year: '', abstract: 'How many compromised agents does it take to derail a swarm consensus, and can monitors catch them?', tags: ['robustness', 'swarm'], color: '#33284a' },
-  { id: 'idea-11', title: 'Shot Quality from Tracking Data', shelf: 'sport', status: 'planned', year: '', abstract: 'An expected-points model for basketball shots using defender distance, shot clock and player history.', tags: ['basketball', 'xP'], color: '#4a3220' },
-  { id: 'idea-12', title: 'Lineup Synergy with Graph Nets', shelf: 'sport', status: 'planned', year: '', abstract: 'Model five-player lineups as graphs and learn which combinations outperform the sum of their parts.', tags: ['basketball', 'GNN'], color: '#4a3220' },
+  // Builds
+  { id: 'nightwatch', title: 'Night Watch', subtitle: 'An autonomous mini-SOC run by three agents', shelf: 'builds', kind: 'project', year: '2026', body: 'The robots in this room. Three agents defend the room’s own network in real time: Sentry watches the event stream, Analyst correlates detections into incidents mapped to MITRE ATT&CK, and Medic contains the threat. You can launch the attacks yourself.', tags: ['multi-agent', 'detection engineering', 'MITRE ATT&CK'], color: '#1f5f8b' },
+  { id: 'lease', title: 'Lease & Contract Analyser', subtitle: 'Retrieval-augmented legal analysis', shelf: 'builds', kind: 'project', year: '2026', body: 'A RAG pipeline that splits tenancy agreements into clauses and maps each one to the governing statute.', points: ['Flags non-standard, missing and unenforceable terms.', 'Reports accuracy against a hand-labelled test set.', 'Scoped in data-retention controls and a clear line between analysis and regulated legal advice.'], tags: ['RAG', 'embeddings', 'LLM APIs'], links: [PRIVATE], color: '#5a4a3a' },
+  { id: 'aris', title: 'Aris', subtitle: 'Voice & gesture controlled system supervisor', shelf: 'builds', kind: 'project', year: '2026', body: 'A local assistant with a FastAPI WebSocket backend, a SQLite indexer over 12 git repos, and a voice and gesture UI built on MediaPipe.', points: ['Tool layer restricted by a repository allowlist and command blocklist, so every action stays inside the sandbox.', 'OAuth 2.0 with rotating refresh tokens. Traced a 403 to header filtering and a TLS failure to a missing trust store.'], tags: ['FastAPI', 'WebSockets', 'MediaPipe', 'OAuth 2.0'], links: [PRIVATE], color: '#2b4f6b' },
+  { id: 'studio', title: 'Security, Animated', subtitle: '2D explainer videos for YouTube', shelf: 'builds', kind: 'project', year: '✎', body: 'I code 2D animations that explain cybersecurity concepts for YouTube. There’s one playing on the studio screen in this room, drawn live in your browser.', tags: ['animation', 'education', 'YouTube'], links: [{ label: 'YouTube channel', href: '✎ https://youtube.com/@your-channel' }], color: '#b5372f' },
+  { id: 'pharmacy', title: 'Pharmacy Ordering System', subtitle: 'Team project · Project Manager', shelf: 'builds', kind: 'project', year: '2026', body: 'Led requirements, design and sprint planning as Project Manager, and co-wrote the C# front end and JWT-secured REST API.', tags: ['C#', 'REST', 'MySQL', 'JWT'], color: '#2d5a50' },
+  { id: 'farazjam', title: 'farazjam.com', subtitle: 'Freelance web development', shelf: 'builds', kind: 'experience', year: '2022–25', body: 'Delivered two business websites from brief to launch as sole point of contact. Alongside it, closed four international B2B deals across Italy, Germany, China and the Middle East for Kaveh Float, negotiating in a second language.', tags: ['web', 'sales'], links: [{ label: 'farazjam.com', href: 'https://farazjam.com' }], color: '#6b5a2a' },
+
+  // Markets
+  { id: 'swarm', title: 'Adaptive Swarm', subtitle: 'AI Engineering Intern · 2026 to present', shelf: 'markets', kind: 'experience', year: '2026–', body: 'I work with Adaptive Swarm’s self-improving, self-adaptive model platform for financial markets. I built a model for understanding and predicting Bitcoin from a set of technical indicators.', points: ['Develop and evaluate models on a node-based adaptive AI platform, from data ingestion to signals scored on live markets.', 'Give the founders structured feedback as an early engineering user, which earned me full access to the model and data layer.'], tags: ['Bitcoin', 'indicators', 'adaptive models'], color: '#5d4790' },
+  { id: 'quantdesk', title: 'quantdesk', subtitle: 'Systematic trading research stack', shelf: 'markets', kind: 'project', year: '2026', body: 'The research harness: an exchange data layer, a DuckDB + Parquet store, a cost model, a backtester and walk-forward tests.', points: ['Multi-asset trend strategy with inverse-volatility sizing and portfolio volatility targeting, rebalanced weekly.', 'Chose rules over machine learning given too few independent market regimes, using walk-forward splits to expose overfitting.'], tags: ['DuckDB', 'Parquet', 'backtesting'], links: [PRIVATE], color: '#2d5a3d' },
+
+  // Curiosities & ideas
+  { id: 'quantum', title: 'Quantum Physics', subtitle: 'A long-running obsession', shelf: 'curious', kind: 'achievement', year: '∞', body: 'Superposition, measurement and the strange fact that the universe keeps its options open until you look. There’s a qubit on the side table you can measure yourself.', tags: ['Bloch sphere', 'measurement'], color: '#3a3f8a' },
+  { id: 'ukmt', title: 'UKMT Senior Challenge', subtitle: 'Silver · Senior Kangaroo Certificate of Merit', shelf: 'curious', kind: 'achievement', year: '2022', body: 'UK Mathematics Trust Senior Mathematical Challenge Silver award and Senior Kangaroo Certificate of Merit.', tags: ['mathematics'], color: '#7a5a1f' },
+  { id: 'idea-memory', title: 'Poisoning Agent Memory', subtitle: 'Next paper idea', shelf: 'curious', kind: 'idea', year: '', body: 'Long-term memory in LLM agents is a corpus the attacker can write to. How long does one poisoned memory persist, and how far does it spread?', tags: ['agents', 'memory'], color: '#3a2a2e' },
+  { id: 'idea-xling', title: 'Cross-Lingual Poisoning', subtitle: 'Next paper idea', shelf: 'curious', kind: 'idea', year: '', body: 'Do poisoned passages written in Persian or Turkish hijack answers to English questions? Multilingual embedders make it likely, and it’s under-studied.', tags: ['multilingual', 'RAG'], color: '#3a2a2e' },
+  { id: 'idea-rvtrade', title: 'Monitors for Trading Agents', subtitle: 'Next paper idea', shelf: 'curious', kind: 'idea', year: '', body: 'Bridges quantdesk and AegisRAG: position limits and wash-trade rules as runtime monitors over an agent’s order flow.', tags: ['compliance', 'LTL'], color: '#20343c' },
+  { id: 'idea-news', title: 'Adversarial News for Trading Bots', subtitle: 'Next paper idea', shelf: 'curious', kind: 'idea', year: '', body: 'RAG poisoning meets markets: can a fake press release steer an agentic trader?', tags: ['security', 'markets'], color: '#233d2c' },
+  { id: 'idea-qml', title: 'Quantum Kernels for Regimes', subtitle: 'Next paper idea', shelf: 'curious', kind: 'idea', year: '', body: 'Can quantum kernel methods separate market regimes that classical kernels blur? A small, honest benchmark on simulators.', tags: ['quantum ML', 'markets'], color: '#2a2e4a' },
+  { id: 'idea-shot', title: 'Shot Quality from Tracking', subtitle: 'Next paper idea', shelf: 'curious', kind: 'idea', year: '', body: 'An expected-points model for basketball shots from defender distance, shot clock and player history.', tags: ['basketball', 'xP'], color: '#4a3220' },
 ]
 
-// ── Systems ──────────────────────────────────────────────────────────────────
-export const quantFund = {
-  title: '✎ Agentic Quant Fund',
-  summary:
-    '✎ A team of cooperating agents (research, signal, risk and execution) that runs a fund end to end. Describe the universe, frequency and what makes it different.',
-  agents: [
-    { name: 'Research', does: '✎ Reads filings and news, writes theses' },
-    { name: 'Signal', does: '✎ Turns theses and factors into scores' },
-    { name: 'Portfolio', does: '✎ Sizes positions under constraints' },
-    { name: 'Risk', does: '✎ Vetoes trades that break limits' },
-    { name: 'Execution', does: '✎ Routes orders, tracks slippage' },
-  ],
-  /** Set to your real backtest numbers; until then the chart shows SAMPLE DATA. */
-  metrics: null as null | { label: string; value: string }[],
-  stack: ['Python', 'LLM agents', 'pandas', 'vectorbt', '✎'],
-  links: [
-    { label: 'Repository', href: '✎ https://github.com/...' },
-    { label: 'Live dashboard', href: '✎ https://...' },
-  ] as Link[],
-  learned: ['✎ What building it taught you, one point per line.'],
-}
-
+// ── Stations ─────────────────────────────────────────────────────────────────
 export const ragLab = {
   title: 'AegisRAG: Poisoning a Security RAG',
   summary:
-    'An attacker who can edit an existing knowledge base swaps words for synonyms until a classifier’s label flips. The text still reads almost normally (“implants malicious software” became “Engraft Malicious Package”), but answers to a cybersecurity question-answering system get measurably worse. I built the system, the attack, a benchmark and the defences.',
+    'An attacker who can edit an existing knowledge base swaps words for synonyms until a classifier’s label flips. The text still reads almost normally (“implants malicious software” became “Engraft Malicious Package”), but answers to a cybersecurity question-answering system get measurably worse. I built the system, the attack, the benchmark and the defences.',
   setup: [
-    { k: 'Corpus', v: '18 docs · 200 passages · 14 attack types, from MITRE ATT&CK + CAPEC' },
-    { k: 'Stack', v: 'FastAPI · LangChain · Qdrant · all-MiniLM-L6-v2 · gpt-4o-mini · Next.js' },
-    { k: 'Benchmark', v: '44 reviewed questions × 3 runs per condition, checksummed records' },
+    { k: 'Corpus', v: '200 MITRE ATT&CK + CAPEC passages · 14 attack types' },
+    { k: 'Stack', v: 'Python · FastAPI · LangChain · Qdrant · all-MiniLM-L6-v2 · gpt-4o-mini · Next.js' },
+    { k: 'Benchmark', v: '44 reviewed questions × 3 runs per condition' },
     { k: 'Judge', v: 'LLM judge vs. my blind grades on 75 answers: weighted κ = 0.82' },
+    { k: 'Integrity', v: '73 headline claims checked against 5,000 SHA-256-checksummed records · 285 tests' },
   ],
   results: [
-    { label: 'Clean', correctness: 0.714, refusals: 26 },
-    { label: 'Poisoned (PWWS)', correctness: 0.555, refusals: 45 },
-    { label: '+ Monitor', correctness: 0.515, refusals: null as number | null },
-    { label: '+ Monitor + MITRE fallback', correctness: 0.786, refusals: 7 },
+    { label: 'Clean', correctness: 0.714 },
+    { label: 'Poisoned (PWWS)', correctness: 0.555 },
+    { label: '+ Monitor', correctness: 0.515 },
+    { label: '+ Monitor + MITRE fallback', correctness: 0.786 },
   ],
   detectors: [
     { name: 'Synonym gap · distilgpt2 reference', pwws: 0.95, control: 0.53 },
@@ -178,21 +191,22 @@ export const ragLab = {
   findings: [
     'The attack works mostly by removing evidence, not by planting lies: refusals went 26 → 45 of 132, wrong answers only 0 → 2.',
     'The damage is local. Questions whose source section was edited dropped 0.682 → 0.432; the rest barely moved.',
-    'One term of the KL divergence (how much likelier a word’s best synonym is) beats the whole sum.',
+    'One term of the KL divergence (how much likelier a word’s best synonym is) beats the whole sum, and names the swapped word in 22 of 27 flagged passages.',
     'A likelihood-constrained adaptive attacker succeeded on 0 of 57 sections.',
     'Filtering makes the knowledge base safer, not more useful. Getting answers back needs a trusted source.',
   ],
   links: [
-    { label: 'Code on GitHub', href: 'https://github.com/Aliyousefi9403/dissertation-RAG' },
-    { label: 'The full story (blog)', href: 'https://aliyousefi9403.github.io/posts/three-months-in-from-a-rag-demo-to-a-paper/' },
-    { label: 'Paper (PDF)', href: '✎ papers/aegisrag.pdf' },
+    { label: 'Read the paper', href: '#read:aegisrag' },
+    { label: 'Download PDF', href: 'papers/aegisrag.pdf' },
+    { label: 'The blog series', href: BLOG },
+    PRIVATE,
   ] as Link[],
 }
 
 export const rv = {
-  title: 'A Runtime Monitor That Remembers',
+  title: 'AegisRAG II: The Runtime Monitor',
   summary:
-    'Filters forget, and they throw away the evidence with the poison. Following Dr Hafizul Asad’s suggestion, I added runtime verification: every answer is checked against rules before the user sees it, violations are fed back, and the passages that caused them are remembered.',
+    'The second half of AegisRAG. Filters forget, and they throw away the evidence with the poison. Following Dr Hafizul Asad’s suggestion, I added runtime verification: every answer is checked against rules before the user sees it, violations are fed back, and the passages that caused them are remembered.',
   rules: [
     { id: 'φ1', name: 'No strange words', text: 'The answer must not contain a rare word (Zipf < 3.5) copied from the retrieved passages that is not in MITRE’s vocabulary or the question.' },
     { id: 'φ2', name: 'Don’t give up wrongly', text: 'The answer must not be a refusal when MITRE covers the attack being asked about.' },
@@ -206,46 +220,92 @@ export const rv = {
     { k: 'Refusals with MITRE fallback', v: '45 → 7' },
   ],
   honest: [
-    'The first φ1 flagged words the model chose itself and wrongly withheld 10 answers. Fixed to count only copied words, then the full experiment was re-run; both runs are kept.',
+    'The first φ1 flagged words the model chose itself and wrongly withheld 10 answers. I fixed it to count only copied words and re-ran the full experiment; both runs are kept.',
     'Blame is rough: on PWWS only 10 of the 18 quarantined passages were actually edited.',
     'The fallback beats the clean system only because it adds trusted text. It shows what a trusted source can add, not what detection can.',
   ],
-  links: [
-    { label: 'Code on GitHub', href: 'https://github.com/Aliyousefi9403/dissertation-RAG' },
-    { label: 'Research blog', href: 'https://aliyousefi9403.github.io' },
-  ] as Link[],
-  learned: ['A memory is only as good as the step that decides what to remember.'],
+  links: [{ label: 'Read the paper (§V-G)', href: '#read:aegis-rv' }, { label: 'The blog series', href: BLOG }] as Link[],
+  learned: 'A memory is only as good as the step that decides what to remember.',
+}
+
+export const quantDesk = {
+  title: 'quantdesk',
+  summary:
+    'My systematic trading research stack. The screens on this desk are live: real Bitcoin and Ethereum prices streamed into your browser, with the indicators computed as each trade arrives.',
+  parts: [
+    { name: 'Data layer', does: 'Exchange REST APIs into a DuckDB + Parquet store' },
+    { name: 'Cost model', does: 'Fees and slippage charged on every simulated fill' },
+    { name: 'Backtester', does: 'Event-driven, weekly rebalance' },
+    { name: 'Walk-forward', does: 'Rolling out-of-sample splits to expose overfitting' },
+    { name: 'Strategy', does: 'Multi-asset trend, inverse-volatility sizing, portfolio vol targeting' },
+  ],
+  why: 'I chose rules over machine learning because there are too few independent market regimes to train on honestly. Walk-forward splits are there to catch me if I fool myself.',
+  stack: ['Python', 'DuckDB', 'Parquet', 'exchange REST APIs'],
+  links: [PRIVATE] as Link[],
 }
 
 export const internship = {
   company: 'Adaptive Swarm',
-  role: '✎ Machine Learning Intern',
-  when: '✎ Month 20XX to Month 20XX',
-  summary: '✎ What the company does and what you were brought in to work on.',
-  timeline: [
-    { when: '✎ Week 1–4', what: '✎ First thing you learned or shipped' },
-    { when: '✎ Month 2', what: '✎ The project that clicked' },
-    { when: '✎ Month 3', what: '✎ What you delivered' },
+  role: 'AI Engineering Intern',
+  when: '2026 to present',
+  summary:
+    'Adaptive Swarm builds a self-improving, self-adaptive AI platform for financial markets, in which models are assembled from nodes that keep adapting as the market changes. On it, I built a model for understanding and predicting Bitcoin from a set of technical indicators.',
+  pipeline: [
+    { k: 'Ingest', v: 'Live BTC market data' },
+    { k: 'Indicators', v: 'Trend, momentum, volatility and volume features (EMA, RSI, MACD, Bollinger…)' },
+    { k: 'Model', v: 'Adaptive nodes that re-weight as regimes shift' },
+    { k: 'Signal', v: 'Scored on live markets' },
   ],
-  learned: ['✎ Machine learning fundamentals you picked up', '✎ Engineering habits', '✎ How it led to the quant fund / RAG work'],
-  links: [] as Link[],
+  did: [
+    'Develop and evaluate models on the node-based platform, from data ingestion to signals scored on live markets.',
+    'Built a Bitcoin model from technical indicators.',
+    'Give the founders structured feedback as an early engineering user, which earned me full access to the model and data layer.',
+  ],
+  learned: ['✎ What working on a self-adapting system taught you about machine learning.'],
 }
 
 export const basketball = {
   headline: 'Basketball',
-  story: [
-    '✎ How you started playing and what the game means to you.',
-    '✎ The national team: which team, which years, which tournaments.',
-    '✎ What basketball taught you that shows up in your research.',
-  ],
+  jersey: '13',
   facts: [
-    { k: 'Position', v: '✎' },
-    { k: 'National team', v: '✎' },
-    { k: 'Years playing', v: '✎' },
-    { k: 'Jersey', v: '✎ #' },
+    { k: 'National team', v: 'Iran U18' },
+    { k: 'Title', v: 'Iran U21 National Champion' },
+    { k: 'Jersey', v: '#13' },
+    { k: 'Knees', v: 'ACL torn twice' },
   ],
-  highlights: ['✎ Tournament / medal / moment', '✎ Tournament / medal / moment'],
-  /** put photos in /public/photos and list them here */
-  photos: [] as string[],
-  links: [] as Link[],
+  story: [
+    'I wore number 13 for Iran’s under-18 national team, and I’m an Iran U21 national champion.',
+    'I also tore my ACL. Twice. Each time it meant months of rehab: relearning to trust a knee, doing the same boring exercises every day, and watching my team play without me.',
+    'That taught me more than any win. Leadership when you can’t lead by scoring. Being a teammate from the bench. Patience with slow progress. And the discipline to keep doing the unglamorous work when nobody is watching. It’s the same discipline that gets a research project finished.',
+  ],
+  learned: [
+    { k: 'Leadership', v: 'Leading when you can’t lead by scoring.' },
+    { k: 'Teamwork', v: 'Making the people around you better, even from the bench.' },
+    { k: 'Resilience', v: 'Two ACL tears, two comebacks.' },
+    { k: 'Discipline', v: 'Rehab is the same rep every day. So is research.' },
+  ],
+}
+
+export const quantum = {
+  title: 'Quantum Physics',
+  summary:
+    'I love quantum physics. A qubit is the simplest object that shows how strange it all is: until it’s measured it’s a point on a sphere, a weighted mix of 0 and 1, and measuring it forces a single answer with probabilities set by where it sat.',
+  note: '✎ A line or two in your own words: what got you into quantum physics, and what you’re reading or wondering about now.',
+}
+
+export const studio = {
+  title: 'Security, Animated',
+  summary:
+    'I code 2D animated explainers that teach cybersecurity concepts for YouTube. The screen in this corner is one of them, rendered frame by frame in your browser: a phishing email, the click, and what actually happens next.',
+  episodes: [
+    { t: 'Phishing, step by step', d: 'From the lure to the stolen session, and the one habit that stops it.' },
+    { t: 'What is a SQL injection?', d: '✎ Add your real video titles here' },
+  ],
+  links: [{ label: 'YouTube channel', href: '✎ https://youtube.com/@your-channel' }] as Link[],
+}
+
+export const view = {
+  title: 'The View',
+  summary:
+    'London from my window. I moved here to study, and it’s where AegisRAG, the internship and most of my late nights happened. The skyline is drawn in layers, so it shifts as you move. Find the Shard, the Gherkin, the BT Tower and the Eye.',
 }

@@ -11,10 +11,13 @@ import { Library } from './stations/Library'
 import { TradingDesk } from './stations/TradingDesk'
 import { SecurityLab } from './stations/SecurityLab'
 import { MonitorWall } from './stations/MonitorWall'
-import { SwarmTable } from './stations/SwarmTable'
+import { AdaptiveSwarm } from './stations/AdaptiveSwarm'
+import { NightWatch } from './stations/NightWatch'
+import { London } from './stations/London'
+import { QuantumCorner } from './stations/QuantumCorner'
+import { Studio } from './stations/Studio'
 import { Basketball } from './stations/Basketball'
 import { AboutDesk } from './stations/AboutDesk'
-import { AgentCrew } from './stations/AgentCrew'
 import { useRoom } from '../store'
 
 RectAreaLightUniformsLib.init()
@@ -77,7 +80,7 @@ export function Experience() {
       dpr={lite ? 1 : [1, 2]}
       camera={{ fov: 38, near: 0.1, far: 80, position: [6, 10, 20] }}
       gl={{ antialias: false, powerPreference: 'high-performance', toneMapping: THREE.NoToneMapping }}
-      onPointerMissed={() => station !== 'overview' && useRoom.getState().paperId === null && go('overview')}
+      onPointerMissed={() => station !== 'overview' && !useRoom.getState().reader && !useRoom.getState().dragging && go('overview')}
     >
       <color attach="background" args={['#05060a']} />
       <fog attach="fog" args={['#05060a', 16, 34]} />
@@ -96,10 +99,13 @@ export function Experience() {
           <TradingDesk />
           <SecurityLab />
           <MonitorWall />
-          <SwarmTable />
+          <AdaptiveSwarm />
           <Basketball />
           <AboutDesk />
-          <AgentCrew />
+          <NightWatch />
+          <London />
+          <QuantumCorner />
+          <Studio />
           <Effects lite={lite} />
         </Selection>
         <Preload all />

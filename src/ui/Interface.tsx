@@ -5,19 +5,23 @@ import { profile } from '../content'
 import { LibraryPanel } from './panels/LibraryPanel'
 import { AboutPanel } from './panels/AboutPanel'
 import { RagPanel } from './panels/RagPanel'
-import { RvPanel, QuantPanel, SwarmPanel, BasketballPanel } from './panels/OtherPanels'
+import { RvPanel, QuantPanel, SwarmPanel, BasketballPanel, QuantumPanel, StudioPanel, ViewPanel } from './panels/Panels'
+import { Reader } from './Reader'
 import { CrewPanel } from './panels/CrewPanel'
-import { ragLab, rv, quantFund, internship, basketball } from '../content'
+import { ragLab, rv, quantDesk, internship, basketball, quantum, studio, view } from '../content'
 import { T } from './bits'
 
 const PANELS = {
   library: { title: 'The Library', C: LibraryPanel },
-  quant: { title: quantFund.title, C: QuantPanel },
+  quant: { title: quantDesk.title, C: QuantPanel },
   rag: { title: ragLab.title, C: RagPanel },
   rv: { title: rv.title, C: RvPanel },
   swarm: { title: internship.company, C: SwarmPanel },
   basketball: { title: basketball.headline, C: BasketballPanel },
-  crew: { title: 'The Agent Crew', C: CrewPanel },
+  crew: { title: 'Night Watch', C: CrewPanel },
+  window: { title: view.title, C: ViewPanel },
+  quantum: { title: quantum.title, C: QuantumPanel },
+  studio: { title: studio.title, C: StudioPanel },
   about: { title: 'About me', C: AboutPanel },
 } as const
 
@@ -222,8 +226,8 @@ export function Interface() {
     const onKey = (e: KeyboardEvent) => {
       const st = useRoom.getState()
       if (e.key === 'Escape') {
+        if (st.reader) return
         if (st.list) st.setList(false)
-        else if (st.paperId) st.setPaper(null)
         else go('overview')
       }
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
@@ -258,6 +262,7 @@ export function Interface() {
       <Tour />
       <Dock />
       <ListView />
+      <Reader />
       <Loader />
     </>
   )

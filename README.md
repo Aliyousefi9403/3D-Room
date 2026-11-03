@@ -8,24 +8,29 @@ An interactive 3D room holding my research, systems and story. Every object is a
 
 | Station | What's there |
 |---|---|
-| **Library** | One shelf per research area. Real papers, lab notebooks (blog posts), the papers I built on, and ghosted "in the works" spines for ideas. Click a book to read it. |
-| **Trading Desk** | The agentic quant fund: live-drawn trading screens and the agent architecture. |
-| **Security Lab** | AegisRAG. An interactive lab: switch between a clean and a PWWS-poisoned knowledge base, add defences, watch retrieval and the answer change. Real results and detector AUROCs. |
-| **Monitor Wall** | The runtime-verification monitor (φ1–φ3) running as a status wall, with a step-through of the loop. |
-| **Agent Crew** | Three hover-bots act out AegisRAG on loop: Mallory poisons the knowledge base, Scout retrieves it, Warden's monitor catches it. Click any of them. |
-| **Swarm Table** | Adaptive Swarm internship, with a live boids simulation in a glass dome. |
-| **Court Corner** | Basketball and the national team. The hoop works. |
-| **Writing Desk** | About me and the CV. |
+| **Library** | Five shelves: Research, Red Team, Things I Built, Markets & ML, Ideas & Curiosities. Scroll over the shelf and each item slides out and turns to face you; some are books, some are objects (the Hack The Box cube, the quantum atom, the Batis coin, the UKMT medal). |
+| **Paper reader** | *Reading the Poison* (Yousefi, Asad & Komninos), page by page with a flip animation, plus PDF download. |
+| **Security Lab** | AegisRAG: an interactive poisoning lab with real results and detector AUROCs. |
+| **Monitor Wall** | AegisRAG part II: the runtime-verification monitor (φ1–φ3) as a live status wall. |
+| **Night Watch** | A real mini-SOC. Five devices in the room form a network with live traffic; five detection rules (MITRE-mapped) run over sliding windows; three agents (Sentry, Analyst, Medic) walk to the device, triage and contain. Visitors can launch attacks. When it's quiet, two agents play 1v1 basketball. |
+| **Trading Desk** | quantdesk, with live BTC/ETH from Coinbase (Kraken fallback) and EMA, RSI, MACD and Bollinger computed in the browser. |
+| **Swarm Table** | Adaptive Swarm: a hologram of the indicator pipeline fed by the live BTC stream. |
+| **Studio** | A 2D cybersecurity explainer (phishing) animated live on Canvas. |
+| **Quantum Corner** | A Bloch-sphere qubit you can rotate, gate (H, X, Z, S) and measure with Born-rule statistics; a Newton's cradle and a spinning top. |
+| **Court** | Jersey #13 (Iran U18), U21 champion medal, ACL x-ray light box. Drag-to-shoot with real ball physics. |
+| **The View** | London from the window, in four parallax layers. |
+| **Desk** | About, experience, and the actual CV on the desk (download). |
 
 ## Editing content
 
 **Everything lives in [`src/content.ts`](src/content.ts).** Any text that starts with `✎` is a placeholder, and the site shows it with a dashed gold outline until you replace it.
 
 - **Papers:** add an entry to `papers`. Put the PDF in `public/papers/` and set `pdf: 'papers/your-file.pdf'`. It gets an in-page reader and a download button.
-- **CV:** drop it at `public/cv/Ali_Yousefi_CV.pdf` and change `cvUrl` to `'cv/Ali_Yousefi_CV.pdf'` (remove the `✎`).
+- **CV:** replace `public/cv/Ali_Yousefi_CV.pdf` and re-render the desk image: `pdftoppm -png -r 110 -f 1 -l 1 public/cv/Ali_Yousefi_CV.pdf public/cv/cv-page`.
+- **Paper pages:** after updating the PDF, `pdftoppm -jpeg -jpegopt quality=74 -r 130 public/papers/aegisrag.pdf public/papers/aegisrag-p`.
 - **Photos:** put them in `public/photos/` and list them in `basketball.photos`.
-- **Ideas → papers:** change a book's `status` from `'planned'` to `'in-progress'`, `'preprint'` or `'published'`. Its spine stops being a ghost.
-- **Agent Crew script:** [`src/crew.ts`](src/crew.ts) holds the paths, lines and timing.
+- **Ideas → papers:** change an item's `kind` from `'idea'` to `'paper'`.
+- **Night Watch:** devices and rules in [`src/sim/network.ts`](src/sim/network.ts), agent behaviour in [`src/sim/crew.ts`](src/sim/crew.ts), navigation in [`src/sim/nav.ts`](src/sim/nav.ts).
 
 ## Run locally
 

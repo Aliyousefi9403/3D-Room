@@ -1,12 +1,16 @@
 import { create } from 'zustand'
 
-export type StationId = 'overview' | 'library' | 'quant' | 'rag' | 'rv' | 'swarm' | 'basketball' | 'about' | 'crew'
+export type StationId = 'overview' | 'library' | 'quant' | 'rag' | 'rv' | 'swarm' | 'basketball' | 'about' | 'crew' | 'window' | 'quantum' | 'studio'
 
 type State = {
   station: StationId
   /** panel visible (after camera arrives) */
   panel: boolean
   paperId: string | null
+  libIndex: number
+  reader: string | null
+  setLibIndex: (i: number) => void
+  setReader: (id: string | null) => void
   hovered: string | null
   score: number
   shots: number
@@ -21,13 +25,19 @@ type State = {
   openPanel: () => void
   setPaper: (id: string | null) => void
   setHovered: (h: string | null) => void
-  shot: (made: boolean) => void
+  shot: (made: boolean, attempt?: boolean) => void
+  dragging: boolean
+  setDragging: (v: boolean) => void
 }
 
 export const useRoom = create<State>((set) => ({
   station: 'overview',
   panel: false,
   paperId: null,
+  libIndex: 0,
+  reader: null,
+  setLibIndex: (libIndex) => set({ libIndex }),
+  setReader: (reader) => set({ reader }),
   hovered: null,
   score: 0,
   shots: 0,
@@ -48,16 +58,21 @@ export const useRoom = create<State>((set) => ({
   openPanel: () => set({ panel: true }),
   setPaper: (paperId) => set({ paperId }),
   setHovered: (hovered) => set({ hovered }),
-  shot: (made) => set((s) => ({ shots: s.shots + 1, score: s.score + (made ? 1 : 0) })),
+  shot: (made, attempt) => set((s) => ({ shots: s.shots + (attempt ? 1 : 0), score: s.score + (made ? 1 : 0) })),
+  dragging: false,
+  setDragging: (dragging) => set({ dragging }),
 }))
 
 export const stations: { id: Exclude<StationId, 'overview'>; label: string; kicker: string }[] = [
-  { id: 'library', label: 'Library', kicker: 'Papers & research' },
-  { id: 'quant', label: 'Trading Desk', kicker: 'Agentic quant fund' },
-  { id: 'rag', label: 'Security Lab', kicker: 'RAG poisoning' },
-  { id: 'rv', label: 'Monitor Wall', kicker: 'Runtime verification' },
-  { id: 'swarm', label: 'Swarm Table', kicker: 'Adaptive Swarm internship' },
-  { id: 'basketball', label: 'Court Corner', kicker: 'Basketball' },
-  { id: 'crew', label: 'Agent Crew', kicker: 'Live multi-agent demo' },
-  { id: 'about', label: 'Writing Desk', kicker: 'About & CV' },
+  { id: 'library', label: 'Library', kicker: 'Research, red team & builds' },
+  { id: 'rag', label: 'Security Lab', kicker: 'AegisRAG · poisoning' },
+  { id: 'rv', label: 'Monitor Wall', kicker: 'AegisRAG II · runtime verification' },
+  { id: 'crew', label: 'Night Watch', kicker: 'Live multi-agent SOC' },
+  { id: 'quant', label: 'Trading Desk', kicker: 'quantdesk · live markets' },
+  { id: 'swarm', label: 'Swarm Table', kicker: 'Adaptive Swarm · Bitcoin model' },
+  { id: 'studio', label: 'Studio', kicker: 'Animated security explainers' },
+  { id: 'quantum', label: 'Quantum Corner', kicker: 'Measure a qubit' },
+  { id: 'basketball', label: 'Court', kicker: 'Iran U18 · #13' },
+  { id: 'window', label: 'The View', kicker: 'London from my window' },
+  { id: 'about', label: 'Desk', kicker: 'About & CV' },
 ]

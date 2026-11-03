@@ -14,7 +14,10 @@ export const views: Record<StationId, View> = {
   rv: { pos: [0.6, 2.1, 1.6], target: [0.6, 1.9, -4.9] },
   swarm: { pos: [1.7, 3.0, 4.1], target: [1.7, 1.15, 0.7] },
   basketball: { pos: [2.6, 2.3, 1.3], target: [5.2, 2.15, -4.3] },
-  crew: { pos: [-1.3, 5.8, 3.6], target: [-2.0, 0.4, -2.3] },
+  crew: { pos: [0.4, 6.8, 7.4], target: [0.6, 0.6, -1.2] },
+  window: { pos: [3.7, 2.0, 0.55], target: [8.0, 2.35, 0.3] },
+  quantum: { pos: [2.05, 1.75, 0.95], target: [3.2, 1.08, -0.4] },
+  studio: { pos: [-3.5, 2.05, 2.85], target: [-6.9, 1.85, 2.6] },
   about: { pos: [4.2, 2.5, 5.3], target: [4.7, 0.9, 2.3] },
 }
 
@@ -22,6 +25,7 @@ export function CameraRig() {
   const ref = useRef<CameraControls>(null)
   const station = useRoom((s) => s.station)
   const openPanel = useRoom((s) => s.openPanel)
+  const dragging = useRoom((s) => s.dragging)
   const size = useThree((s) => s.size)
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera
   const first = useRef(true)
@@ -66,6 +70,7 @@ export function CameraRig() {
     <CameraControls
       ref={ref}
       makeDefault
+      enabled={!dragging}
       smoothTime={0.55}
       draggingSmoothTime={0.2}
       minDistance={overview ? 7 : 1.4}

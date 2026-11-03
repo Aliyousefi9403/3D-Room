@@ -1,145 +1,237 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import { Hotspot } from '../Hotspot'
 import { Spot } from '../Spot'
+import { feeds, startMarket, read, Feed } from '../../market'
 
-/** Live-drawn screens. Decorative simulation, clearly not real fund data. */
-function useScreens() {
-  return useMemo(() => {
-    const mk = () => {
-      const canvas = document.createElement('canvas')
-      canvas.width = 768
-      canvas.height = 448
-      const tex = new THREE.CanvasTexture(canvas)
-      tex.colorSpace = THREE.SRGBColorSpace
-      return { canvas, ctx: canvas.getContext('2d')!, tex }
-    }
-    const candles: { o: number; c: number; h: number; l: number }[] = []
-    let p = 100
-    for (let i = 0; i < 70; i++) {
-      const o = p
-      p = p + (Math.random() - 0.47) * 2.2
-      candles.push({ o, c: p, h: Math.max(o, p) + Math.random() * 1.2, l: Math.min(o, p) - Math.random() * 1.2 })
-    }
-    const equity: number[] = [1]
-    for (let i = 0; i < 160; i++) equity.push(equity[i] * (1 + (Math.random() - 0.46) * 0.012))
-    const log: string[] = []
-    return { screens: [mk(), mk(), mk()], candles, equity, log, price: p }
-  }, [])
+const W = 768
+const H = 448
+const C = { bg: '#060a11', grid: 'rgba(120,160,220,0.07)', ink: '#e8eefb', dim: 'rgba(200,214,240,0.5)', up: '#3ddc97', dn: '#ff5c7a', gold: '#f5c26b', blue: '#8fb3ff' }
+const fmt = (v: number, d = 2) => v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d })
+
+function badge(c: CanvasRenderingContext2D, f: Feed, t: number, x: number, y: number) {
+  const live = f.status === 'live'
+  const col = live ? C.dn : f.status === 'simulated' ? C.gold : C.blue
+  c.globalAlpha = live ? 0.55 + 0.45 * Math.sin(t * 5) : 1
+  c.fillStyle = col
+  c.beginPath()
+  c.arc(x, y - 6, 6, 0, Math.PI * 2)
+  c.fill()
+  c.globalAlpha = 1
+  c.font = '600 15px JetBrains Mono, monospace'
+  c.fillText(live ? 'LIVE' : f.status === 'simulated' ? 'SIM' : f.status === 'delayed' ? 'DELAYED' : '…', x + 12, y)
+  c.fillStyle = C.dim
+  c.font = '400 12px JetBrains Mono, monospace'
+  c.fillText(f.source, x + 12, y + 16)
 }
 
-const AGENTS = ['research', 'signal', 'portfolio', 'risk', 'execution']
-const MSG = [
-  'thesis updated · sector rotation',
-  'score 0.62 → 0.71',
-  'rebalance proposed · 4 legs',
-  'check passed · gross 1.4x',
-  'VETO · single-name limit',
-  'routed · TWAP 12 slices',
-  'filled · slippage 1.8bp',
-  'news ingested · 38 items',
-  'regime: low-vol trend',
-]
+function grid(c: CanvasRenderingContext2D) {
+  c.fillStyle = C.bg
+  c.fillRect(0, 0, W, H)
+  c.strokeStyle = C.grid
+  c.lineWidth = 1
+  for (let x = 0; x < W; x += 48) (c.beginPath(), c.moveTo(x, 0), c.lineTo(x, H), c.stroke())
+  for (let y = 0; y < H; y += 48) (c.beginPath(), c.moveTo(0, y), c.lineTo(W, y), c.stroke())
+}
 
-function drawCandles(ctx: CanvasRenderingContext2D, w: number, h: number, data: { o: number; c: number; h: number; l: number }[], t: number) {
-  ctx.fillStyle = '#070b12'
-  ctx.fillRect(0, 0, w, h)
-  ctx.strokeStyle = 'rgba(120,160,220,0.08)'
-  for (let x = 0; x < w; x += 48) (ctx.beginPath(), ctx.moveTo(x, 0), ctx.lineTo(x, h), ctx.stroke())
-  for (let y = 0; y < h; y += 48) (ctx.beginPath(), ctx.moveTo(0, y), ctx.lineTo(w, y), ctx.stroke())
-  const lo = Math.min(...data.map((d) => d.l))
-  const hi = Math.max(...data.map((d) => d.h))
-  const Y = (v: number) => 70 + (1 - (v - lo) / (hi - lo)) * (h - 110)
-  const cw = (w - 40) / data.length
-  data.forEach((d, i) => {
-    const x = 20 + i * cw
+/** Screen 2: BTC 1m candles, EMA20/50 and Bollinger bands. */
+function drawChart(c: CanvasRenderingContext2D, f: Feed, t: number) {
+  grid(c)
+  const cs = f.candles.slice(-80)
+  const off = f.candles.length - cs.length
+  if (cs.length < 2) {
+    c.fillStyle = C.dim
+    c.font = '500 22px JetBrains Mono, monospace'
+    c.fillText('connecting to market…', 40, H / 2)
+    return
+  }
+  const i = f.ind
+  const lo = Math.min(...cs.map((d, k) => Math.min(d.l, i.bbL[off + k] ?? d.l)))
+  const hi = Math.max(...cs.map((d, k) => Math.max(d.h, i.bbU[off + k] ?? d.h)))
+  const top = 74
+  const bot = H - 28
+  const Y = (v: number) => top + (1 - (v - lo) / (hi - lo || 1)) * (bot - top)
+  const cw = (W - 100) / cs.length
+  const X = (k: number) => 16 + k * cw + cw / 2
+  // bollinger band fill
+  c.beginPath()
+  cs.forEach((_, k) => (k ? c.lineTo(X(k), Y(i.bbU[off + k])) : c.moveTo(X(k), Y(i.bbU[off + k]))))
+  for (let k = cs.length - 1; k >= 0; k--) c.lineTo(X(k), Y(i.bbL[off + k]))
+  c.fillStyle = 'rgba(143,179,255,0.07)'
+  c.fill()
+  cs.forEach((d, k) => {
     const up = d.c >= d.o
-    ctx.strokeStyle = ctx.fillStyle = up ? '#3ddc97' : '#ff5c7a'
-    ctx.beginPath()
-    ctx.moveTo(x + cw / 2, Y(d.h))
-    ctx.lineTo(x + cw / 2, Y(d.l))
-    ctx.stroke()
-    ctx.fillRect(x + 1, Math.min(Y(d.o), Y(d.c)), cw - 2, Math.max(2, Math.abs(Y(d.o) - Y(d.c))))
+    c.strokeStyle = c.fillStyle = up ? C.up : C.dn
+    c.beginPath()
+    c.moveTo(X(k), Y(d.h))
+    c.lineTo(X(k), Y(d.l))
+    c.stroke()
+    c.fillRect(X(k) - cw / 2 + 1, Math.min(Y(d.o), Y(d.c)), Math.max(1, cw - 2), Math.max(1.5, Math.abs(Y(d.o) - Y(d.c))))
   })
-  // moving average
-  ctx.strokeStyle = '#f5c26b'
-  ctx.lineWidth = 2
-  ctx.beginPath()
-  data.forEach((_, i) => {
-    const s = data.slice(Math.max(0, i - 9), i + 1)
-    const m = s.reduce((a, b) => a + b.c, 0) / s.length
-    const x = 20 + i * cw + cw / 2
-    i ? ctx.lineTo(x, Y(m)) : ctx.moveTo(x, Y(m))
-  })
-  ctx.stroke()
-  ctx.lineWidth = 1
-  const last = data[data.length - 1]
-  ctx.fillStyle = '#e8eefb'
-  ctx.font = '600 26px JetBrains Mono, monospace'
-  ctx.fillText('AGNT · 5m', 22, 40)
-  ctx.fillStyle = last.c >= data[data.length - 2].c ? '#3ddc97' : '#ff5c7a'
-  ctx.fillText(last.c.toFixed(2), w - 130, 40)
-  ctx.fillStyle = 'rgba(232,238,251,0.45)'
-  ctx.font = '400 14px JetBrains Mono, monospace'
-  ctx.fillText('SIMULATED FEED', w - 150, h - 14)
-  // live dot
-  ctx.fillStyle = `rgba(255,92,122,${0.5 + 0.5 * Math.sin(t * 6)})`
-  ctx.beginPath()
-  ctx.arc(w - 150, 32, 6, 0, Math.PI * 2)
-  ctx.fill()
+  const line = (arr: number[], col: string, w = 2) => {
+    c.strokeStyle = col
+    c.lineWidth = w
+    c.beginPath()
+    cs.forEach((_, k) => (k ? c.lineTo(X(k), Y(arr[off + k])) : c.moveTo(X(k), Y(arr[off + k]))))
+    c.stroke()
+    c.lineWidth = 1
+  }
+  line(i.ema20, C.gold)
+  line(i.ema50, C.blue)
+  // last price tag
+  const last = cs[cs.length - 1].c
+  c.setLineDash([4, 4])
+  c.strokeStyle = 'rgba(232,238,251,0.35)'
+  c.beginPath()
+  c.moveTo(16, Y(last))
+  c.lineTo(W - 84, Y(last))
+  c.stroke()
+  c.setLineDash([])
+  c.fillStyle = C.ink
+  c.fillRect(W - 84, Y(last) - 12, 80, 24)
+  c.fillStyle = '#0a0c12'
+  c.font = '600 14px JetBrains Mono, monospace'
+  c.fillText(fmt(last, 0), W - 78, Y(last) + 5)
+  // header
+  c.fillStyle = C.ink
+  c.font = '600 26px JetBrains Mono, monospace'
+  c.fillText('BTC-USD · 1m', 20, 40)
+  if (f.change24 !== undefined) {
+    c.fillStyle = f.change24 >= 0 ? C.up : C.dn
+    c.font = '500 16px JetBrains Mono, monospace'
+    c.fillText(`${f.change24 >= 0 ? '+' : ''}${(f.change24 * 100).toFixed(2)}% 24h`, 230, 40)
+  }
+  c.font = '400 12px JetBrains Mono, monospace'
+  c.fillStyle = C.gold
+  c.fillText('EMA20', 20, 62)
+  c.fillStyle = C.blue
+  c.fillText('EMA50', 74, 62)
+  c.fillStyle = C.dim
+  c.fillText('BB(20,2)', 128, 62)
+  c.fillStyle = C.dn
+  badge(c, f, t, W - 150, 34)
 }
 
-function drawLog(ctx: CanvasRenderingContext2D, w: number, h: number, log: string[]) {
-  ctx.fillStyle = '#060a10'
-  ctx.fillRect(0, 0, w, h)
-  ctx.fillStyle = '#8fb3ff'
-  ctx.font = '600 22px JetBrains Mono, monospace'
-  ctx.fillText('AGENT BUS', 22, 38)
-  ctx.font = '400 17px JetBrains Mono, monospace'
-  log.slice(-14).forEach((line, i) => {
-    const veto = line.includes('VETO')
-    ctx.fillStyle = veto ? '#ff5c7a' : i === Math.min(13, log.length - 1) ? '#e8eefb' : 'rgba(200,214,240,0.6)'
-    ctx.fillText(line, 22, 76 + i * 26)
+/** Screen 1: the live trade tape plus an ETH sparkline. */
+function drawTape(c: CanvasRenderingContext2D, btc: Feed, eth: Feed) {
+  grid(c)
+  c.fillStyle = C.blue
+  c.font = '600 20px JetBrains Mono, monospace'
+  c.fillText('TAPE · BTC-USD', 22, 36)
+  c.font = '400 15px JetBrains Mono, monospace'
+  btc.trades.slice(-11).reverse().forEach((tr, k) => {
+    const y = 70 + k * 24
+    c.globalAlpha = 1 - k * 0.06
+    c.fillStyle = C.dim
+    c.fillText(new Date(tr.t).toTimeString().slice(0, 8), 22, y)
+    c.fillStyle = tr.side === 'buy' ? C.up : C.dn
+    c.fillText(fmt(tr.price), 130, y)
+    c.fillStyle = C.ink
+    c.fillText(tr.size.toFixed(5), 270, y)
+    c.fillStyle = tr.side === 'buy' ? C.up : C.dn
+    c.fillRect(380, y - 11, Math.min(330, Math.sqrt(tr.size) * 260), 12)
   })
+  c.globalAlpha = 1
+  // ETH sparkline
+  const e = eth.candles.slice(-80).map((x) => x.c)
+  const y0 = H - 92
+  c.strokeStyle = 'rgba(200,214,240,0.15)'
+  c.beginPath()
+  c.moveTo(22, y0 - 8)
+  c.lineTo(W - 22, y0 - 8)
+  c.stroke()
+  c.fillStyle = C.ink
+  c.font = '600 16px JetBrains Mono, monospace'
+  c.fillText(`ETH-USD  ${eth.last ? fmt(eth.last) : '…'}`, 22, y0 + 14)
+  if (e.length > 2) {
+    const lo = Math.min(...e)
+    const hi = Math.max(...e)
+    c.strokeStyle = C.blue
+    c.lineWidth = 2
+    c.beginPath()
+    e.forEach((v, k) => {
+      const x = 260 + (k / (e.length - 1)) * (W - 290)
+      const y = y0 + 64 - ((v - lo) / (hi - lo || 1)) * 60
+      k ? c.lineTo(x, y) : c.moveTo(x, y)
+    })
+    c.stroke()
+    c.lineWidth = 1
+  }
 }
 
-function drawEquity(ctx: CanvasRenderingContext2D, w: number, h: number, eq: number[], t: number) {
-  ctx.fillStyle = '#070b12'
-  ctx.fillRect(0, 0, w, h)
-  const lo = Math.min(...eq)
-  const hi = Math.max(...eq)
-  const Y = (v: number) => 70 + (1 - (v - lo) / (hi - lo + 1e-6)) * (h * 0.5)
-  const g = ctx.createLinearGradient(0, 70, 0, h * 0.6 + 70)
-  g.addColorStop(0, 'rgba(143,179,255,0.45)')
-  g.addColorStop(1, 'rgba(143,179,255,0)')
-  ctx.beginPath()
-  eq.forEach((v, i) => {
-    const x = 20 + (i / (eq.length - 1)) * (w - 40)
-    i ? ctx.lineTo(x, Y(v)) : ctx.moveTo(x, Y(v))
+/** Screen 3: indicators and a transparent rule-based read. */
+function drawSignals(c: CanvasRenderingContext2D, f: Feed) {
+  grid(c)
+  c.fillStyle = C.ink
+  c.font = '600 20px JetBrains Mono, monospace'
+  c.fillText('SIGNALS · computed live', 22, 36)
+  const r = read(f)
+  if (!r) return
+  const k = f.candles.length - 1
+  // RSI gauge
+  const cx = 150
+  const cy = 190
+  c.lineWidth = 16
+  c.strokeStyle = 'rgba(255,255,255,0.08)'
+  c.beginPath()
+  c.arc(cx, cy, 90, Math.PI, 0)
+  c.stroke()
+  const a = Math.PI + (r.rsi / 100) * Math.PI
+  c.strokeStyle = r.rsi > 70 ? C.dn : r.rsi < 30 ? C.up : C.gold
+  c.beginPath()
+  c.arc(cx, cy, 90, Math.PI, a)
+  c.stroke()
+  c.lineWidth = 1
+  c.fillStyle = C.ink
+  c.font = '600 38px JetBrains Mono, monospace'
+  c.textAlign = 'center'
+  c.fillText(r.rsi.toFixed(0), cx, cy - 6)
+  c.font = '400 14px JetBrains Mono, monospace'
+  c.fillStyle = C.dim
+  c.fillText('RSI(14)', cx, cy + 20)
+  c.textAlign = 'left'
+  // MACD histogram
+  const hist = f.ind.macd.slice(-60).map((m, j) => m - f.ind.signal[f.ind.signal.length - 60 + j])
+  const mx = Math.max(...hist.map(Math.abs)) || 1
+  const hx = 300
+  const hy = 160
+  c.fillStyle = C.dim
+  c.fillText('MACD(12,26,9)', hx, 80)
+  hist.forEach((v, j) => {
+    c.fillStyle = v >= 0 ? C.up : C.dn
+    const hgt = (v / mx) * 60
+    c.fillRect(hx + j * 7, hy - Math.max(0, hgt), 5, Math.abs(hgt))
   })
-  ctx.strokeStyle = '#8fb3ff'
-  ctx.lineWidth = 2.5
-  ctx.stroke()
-  ctx.lineTo(w - 20, h * 0.6 + 70)
-  ctx.lineTo(20, h * 0.6 + 70)
-  ctx.fillStyle = g
-  ctx.fill()
-  ctx.lineWidth = 1
-  ctx.fillStyle = '#e8eefb'
-  ctx.font = '600 22px JetBrains Mono, monospace'
-  ctx.fillText('BOOK · EQUITY', 22, 38)
-  // agent consensus bars
-  AGENTS.forEach((a, i) => {
-    const y = h * 0.6 + 100 + i * 20
-    const v = 0.5 + 0.45 * Math.sin(t * 0.8 + i * 1.7)
-    ctx.fillStyle = 'rgba(200,214,240,0.55)'
-    ctx.font = '400 14px JetBrains Mono, monospace'
-    ctx.fillText(a.padEnd(10), 22, y)
-    ctx.fillStyle = i === 3 ? '#f5c26b' : '#3ddc97'
-    ctx.fillRect(130, y - 11, v * (w - 170), 10)
+  // read
+  const rows: [string, string, string][] = [
+    ['trend', r.trend > 0 ? 'EMA20 > EMA50' : 'EMA20 < EMA50', r.trend > 0 ? C.up : C.dn],
+    ['momentum', r.mom > 0 ? 'MACD above signal' : 'MACD below signal', r.mom > 0 ? C.up : C.dn],
+    ['band', `${(r.bbPos * 100).toFixed(0)}% of Bollinger range`, C.blue],
+  ]
+  rows.forEach(([kk, v, col], j) => {
+    const y = 290 + j * 30
+    c.fillStyle = C.dim
+    c.font = '400 15px JetBrains Mono, monospace'
+    c.fillText(kk.padEnd(10), 22, y)
+    c.fillStyle = col
+    c.fillText(v, 140, y)
   })
+  // score bar
+  const y = H - 36
+  c.fillStyle = 'rgba(255,255,255,0.07)'
+  c.fillRect(22, y, W - 44, 10)
+  c.fillStyle = r.score >= 0 ? C.up : C.dn
+  const mid = 22 + (W - 44) / 2
+  c.fillRect(Math.min(mid, mid + r.score * (W - 44) / 2), y, Math.abs(r.score * (W - 44) / 2), 10)
+  c.fillStyle = C.ink
+  c.fillRect(mid - 1, y - 4, 2, 18)
+  c.fillStyle = C.dim
+  c.font = '400 12px JetBrains Mono, monospace'
+  c.fillText('bearish', 22, y - 8)
+  c.fillText('bullish', W - 80, y - 8)
+  void k
 }
 
 function Monitor({ position, rotationY, tex }: { position: [number, number, number]; rotationY: number; tex: THREE.Texture }) {
@@ -161,41 +253,32 @@ function Monitor({ position, rotationY, tex }: { position: [number, number, numb
 }
 
 export function TradingDesk() {
-  const st = useScreens()
-  const acc = useRef({ t: 0, tick: 0, logT: 0 })
-  useFrame((_, dt) => {
-    const a = acc.current
-    a.t += dt
-    a.tick += dt
-    a.logT += dt
-    if (a.tick < 0.1) return
-    a.tick = 0
-    // evolve the last candle, occasionally open a new one
-    const c = st.candles
-    const last = c[c.length - 1]
-    st.price += (Math.random() - 0.48) * 0.5
-    last.c = st.price
-    last.h = Math.max(last.h, st.price)
-    last.l = Math.min(last.l, st.price)
-    if (Math.random() < 0.04) {
-      c.shift()
-      c.push({ o: st.price, c: st.price, h: st.price, l: st.price })
-      st.equity.shift()
-      st.equity.push(st.equity[st.equity.length - 1] * (1 + (Math.random() - 0.46) * 0.012))
-    }
-    if (a.logT > 0.9) {
-      a.logT = 0
-      const ag = AGENTS[Math.floor(Math.random() * AGENTS.length)]
-      const ts = new Date().toISOString().slice(11, 19)
-      st.log.push(`${ts} [${ag.padEnd(9)}] ${MSG[Math.floor(Math.random() * MSG.length)]}`)
-      if (st.log.length > 40) st.log.shift()
-    }
-    const [s1, s2, s3] = st.screens
-    drawLog(s1.ctx, 768, 448, st.log)
-    drawCandles(s2.ctx, 768, 448, c, a.t)
-    drawEquity(s3.ctx, 768, 448, st.equity, a.t)
-    st.screens.forEach((s) => (s.tex.needsUpdate = true))
+  useEffect(startMarket, [])
+  const screens = useMemo(
+    () =>
+      [0, 1, 2].map(() => {
+        const canvas = document.createElement('canvas')
+        canvas.width = W
+        canvas.height = H
+        const tex = new THREE.CanvasTexture(canvas)
+        tex.colorSpace = THREE.SRGBColorSpace
+        tex.anisotropy = 8
+        return { ctx: canvas.getContext('2d')!, tex }
+      }),
+    [],
+  )
+  const acc = useRef(0)
+  useFrame(({ clock }, dt) => {
+    acc.current += dt
+    if (acc.current < 0.15) return
+    acc.current = 0
+    const btc = feeds['BTC-USD']
+    drawTape(screens[0].ctx, btc, feeds['ETH-USD'])
+    drawChart(screens[1].ctx, btc, clock.elapsedTime)
+    drawSignals(screens[2].ctx, btc)
+    screens.forEach((s) => (s.tex.needsUpdate = true))
   })
+  const st = { screens }
 
   return (
     <Hotspot id="quant" label={[-3, 2.05, 1.4]}>

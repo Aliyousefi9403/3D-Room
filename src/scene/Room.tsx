@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
-import { woodFloor, wallPanel, rugTexture, skyline, canvasTexture } from './textures'
+import { woodFloor, wallPanel, rugTexture, canvasTexture } from './textures'
+import { RightWall } from './stations/London'
 
 export const ROOM = { w: 14, d: 10, h: 4.2 }
 
@@ -57,37 +58,6 @@ function NeonName() {
       <planeGeometry args={[2.6, 0.65]} />
       <meshBasicMaterial map={tex} transparent toneMapped={false} color={[2.2, 1.6, 1.2]} depthWrite={false} />
     </mesh>
-  )
-}
-
-function Window() {
-  const sky = useMemo(skyline, [])
-  return (
-    <group position={[6.97, 2.25, 0.4]} rotation={[0, -Math.PI / 2, 0]}>
-      <mesh position={[0, 0, -0.01]}>
-        <planeGeometry args={[2.3, 1.75]} />
-        <meshBasicMaterial map={sky} toneMapped={false} color={[1.1, 1.1, 1.1]} />
-      </mesh>
-      {/* frame + mullions */}
-      {[
-        [0, 0.9, 2.42, 0.08],
-        [0, -0.9, 2.42, 0.08],
-        [-1.19, 0, 0.08, 1.88],
-        [1.19, 0, 0.08, 1.88],
-        [0, 0, 0.04, 1.8],
-        [0, 0.15, 2.3, 0.04],
-      ].map(([x, y, w, h], i) => (
-        <mesh key={i} position={[x, y, 0.03]}>
-          <boxGeometry args={[w, h, 0.08]} />
-          <meshStandardMaterial color="#0c0e14" roughness={0.4} metalness={0.4} />
-        </mesh>
-      ))}
-      <mesh position={[0, -0.97, 0.12]}>
-        <boxGeometry args={[2.6, 0.05, 0.3]} />
-        <meshStandardMaterial color="#1a1f2b" roughness={0.5} />
-      </mesh>
-      <rectAreaLight args={['#8a7bff', 3, 2.2, 1.6]} position={[0, 0, 0.1]} />
-    </group>
   )
 }
 
@@ -161,7 +131,7 @@ export function Room() {
       </mesh>
       <Wall position={[0, 0, -ROOM.d / 2]} width={ROOM.w} map={wall} />
       <Wall position={[-ROOM.w / 2, 0, 0]} rotation={[0, Math.PI / 2, 0]} width={ROOM.d} map={wall} />
-      <Wall position={[ROOM.w / 2, 0, 0]} rotation={[0, -Math.PI / 2, 0]} width={ROOM.d} map={wall} />
+      <RightWall map={wall} />
       {/* wall end caps for a clean cutaway edge */}
       {[-1, 1].map((s) => (
         <mesh key={s} position={[s * (ROOM.w / 2 + 0.06), ROOM.h / 2, ROOM.d / 2 - 0.0]}>
@@ -175,10 +145,9 @@ export function Room() {
         <meshStandardMaterial map={rug} roughness={1} />
       </mesh>
       <NeonName />
-      <Window />
       <FloorLamp position={[-1.7, 0, -4.4]} />
       <Plant position={[-6.4, 0, 3.9]} scale={1.5} seed={3} />
-      <Plant position={[6.3, 0, -0.9]} scale={1.2} seed={5} />
+      <Plant position={[6.35, 0, 4.3]} scale={1.2} seed={5} />
       <Plant position={[2.6, 0, -4.4]} scale={1.1} seed={8} />
       {/* bench under window */}
       <RoundedBox args={[0.55, 0.45, 2.0]} radius={0.06} position={[6.62, 0.23, 0.4]} castShadow receiveShadow>

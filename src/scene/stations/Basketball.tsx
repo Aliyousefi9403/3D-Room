@@ -5,42 +5,10 @@ import { RoundedBox } from '@react-three/drei'
 import { Hotspot } from '../Hotspot'
 import { Spot } from '../Spot'
 import { canvasTexture } from '../textures'
-import { useRoom } from '../../store'
 
 const RIM: [number, number, number] = [5.0, 3.05, -4.38]
 const BALL_R = 0.12
 const RACK: [number, number, number] = [5.95, 0, -3.0]
-
-function ballTexture() {
-  return canvasTexture(1024, 512, (c, w, h) => {
-    const g = c.createLinearGradient(0, 0, 0, h)
-    g.addColorStop(0, '#d2601f')
-    g.addColorStop(1, '#b44d14')
-    c.fillStyle = g
-    c.fillRect(0, 0, w, h)
-    for (let i = 0; i < 30000; i++) {
-      c.fillStyle = `rgba(0,0,0,${Math.random() * 0.15})`
-      c.fillRect(Math.random() * w, Math.random() * h, 2, 2)
-    }
-    c.strokeStyle = '#1a0c05'
-    c.lineWidth = 9
-    c.beginPath()
-    c.moveTo(0, h / 2)
-    c.lineTo(w, h / 2)
-    c.stroke()
-    for (const x of [w / 4, (3 * w) / 4]) {
-      c.beginPath()
-      c.moveTo(x, 0)
-      c.lineTo(x, h)
-      c.stroke()
-    }
-    for (const x of [0, w / 2]) {
-      c.beginPath()
-      c.ellipse(x + w / 4, h / 2, w / 5.2, h / 2, 0, 0, Math.PI * 2)
-      c.stroke()
-    }
-  })
-}
 
 function Hoop() {
   const board = useMemo(
@@ -78,7 +46,7 @@ function Hoop() {
 }
 
 function Jersey() {
-  const profile = { name: 'YOUSEFI' }
+  const profile = { name: 'YOUSEFI', number: '13' }
   const tex = useMemo(
     () =>
       canvasTexture(512, 640, (c, w, h) => {
@@ -86,7 +54,7 @@ function Jersey() {
         c.fillStyle = '#efe9df'
         c.fillRect(0, 0, w, h)
         // jersey silhouette
-        c.fillStyle = '#12306b'
+        c.fillStyle = '#f4f4f2'
         c.beginPath()
         c.moveTo(150, 90)
         c.quadraticCurveTo(256, 150, 362, 90)
@@ -98,19 +66,26 @@ function Jersey() {
         c.lineTo(92, 110)
         c.closePath()
         c.fill()
-        c.strokeStyle = '#d9b35b'
-        c.lineWidth = 10
+        c.strokeStyle = '#239f40'
+        c.lineWidth = 12
         c.stroke()
-        c.fillStyle = '#fff'
-        c.font = '700 44px Inter, sans-serif'
+        // trim: green / red bands
+        c.fillStyle = '#da0000'
+        c.fillRect(117, 540, 278, 12)
+        c.fillStyle = '#239f40'
+        c.fillRect(117, 524, 278, 12)
+        c.fillStyle = '#1b1b1f'
         c.textAlign = 'center'
-        c.fillText(profile.name, 256, 250)
-        c.font = '800 150px Inter, sans-serif'
-        c.fillStyle = '#d9b35b'
-        c.fillText('#', 256, 420)
+        c.font = '800 34px Inter, sans-serif'
+        c.fillText('IRAN', 256, 200)
+        c.font = '700 40px Inter, sans-serif'
+        c.fillText(profile.name, 256, 260)
+        c.font = '900 190px Inter, sans-serif'
+        c.fillStyle = '#da0000'
+        c.fillText(profile.number, 256, 450)
         c.fillStyle = '#7a6f60'
-        c.font = '500 22px Inter, sans-serif'
-        c.fillText('NATIONAL TEAM', 256, 610)
+        c.font = '600 22px Inter, sans-serif'
+        c.fillText('IRAN U18 NATIONAL TEAM', 256, 610)
       }),
     [profile.name],
   )
@@ -160,112 +135,131 @@ function CourtKey() {
   )
 }
 
-type Shot = { t: number; made: boolean; from: THREE.Vector3; done: boolean }
-
-function Balls() {
-  const tex = useMemo(ballTexture, [])
-  const station = useRoom((s) => s.station)
-  const shot = useRoom((s) => s.shot)
-  const ball = useRef<THREE.Mesh>(null)
-  const [hover, setHover] = useState(false)
-  const s = useRef<Shot | null>(null)
-  const vel = useRef(new THREE.Vector3())
-  const home = useMemo(() => new THREE.Vector3(RACK[0], 0.95, RACK[2]), [])
-
-  useFrame((_, dtRaw) => {
-    const m = ball.current
-    if (!m) return
-    const dt = Math.min(dtRaw, 0.04)
-    const cur = s.current
-    if (!cur) {
-      m.position.lerp(home, 0.2)
-      m.rotation.y += dt * 0.3
-      return
-    }
-    cur.t += dt
-    const T = 1.05
-    if (cur.t <= T) {
-      // parabolic flight to just above the rim (or off the front of it on a miss)
-      const k = cur.t / T
-      const end = new THREE.Vector3(RIM[0] + (cur.made ? 0 : 0.18), RIM[1] + 0.02, RIM[2] + (cur.made ? 0 : 0.21))
-      m.position.lerpVectors(cur.from, end, k)
-      m.position.y += Math.sin(k * Math.PI) * 1.25
-      m.rotation.x -= dt * 9
-      if (cur.t + dt > T) vel.current.set(cur.made ? 0 : 0.9, cur.made ? -1.2 : 1.0, cur.made ? 0.05 : 1.6)
-    } else {
-      const v = vel.current
-      v.y -= 9.8 * dt
-      m.position.addScaledVector(v, dt)
-      m.rotation.x -= dt * 5
-      if (m.position.y < BALL_R) {
-        m.position.y = BALL_R
-        v.y = Math.abs(v.y) * 0.62
-        v.x *= 0.8
-        v.z *= 0.8
-        if (Math.abs(v.y) < 0.4 && !cur.done) {
-          cur.done = true
-          setTimeout(() => (s.current = null), 500)
-        }
-      }
-      // keep inside the room
-      m.position.x = Math.min(6.8, m.position.x)
-      m.position.z = Math.max(-4.8, m.position.z)
-    }
-  })
-
-  const shoot = () => {
-    if (s.current || !ball.current) return
-    const made = Math.random() < 0.72
-    s.current = { t: 0, made, from: ball.current.position.clone(), done: false }
-    setTimeout(() => shot(made), 1050)
-  }
-
-  const interactive = station === 'basketball'
+function Rack() {
   return (
-    <group>
-      {/* rack */}
-      <group position={RACK}>
-        {[-0.25, 0.25].map((z) => (
-          <mesh key={z} castShadow position={[0, 0.42, z]}>
-            <boxGeometry args={[0.04, 0.84, 0.04]} />
-            <meshStandardMaterial color="#1b1f29" metalness={0.8} roughness={0.3} />
-          </mesh>
-        ))}
-        {[0.82, 0.165].map((y) => (
-          <mesh key={y} position={[0, y, 0]} castShadow receiveShadow>
-            <boxGeometry args={[0.3, 0.03, 0.56]} />
-            <meshStandardMaterial color="#1b1f29" metalness={0.8} roughness={0.3} />
-          </mesh>
-        ))}
-        {[-0.14, 0.14].map((z) => (
-          <mesh key={z} castShadow position={[0, 0.3, z]}>
-            <sphereGeometry args={[BALL_R, 48, 32]} />
-            <meshStandardMaterial map={tex} roughness={0.75} />
-          </mesh>
-        ))}
-      </group>
-      <mesh
-        ref={ball}
-        castShadow
-        position={home}
-        onPointerOver={(e) => {
-          if (!interactive) return
-          e.stopPropagation()
-          setHover(true)
-          document.body.style.cursor = 'pointer'
-        }}
-        onPointerOut={() => {
-          setHover(false)
-          if (interactive) document.body.style.cursor = ''
-        }}
-        onClick={(e) => {
-          if (!interactive) return
-          e.stopPropagation()
-          shoot()
-        }}
-      >
-        <sphereGeometry args={[BALL_R, 48, 32]} />
-        <meshStandardMaterial map={tex} roughness={0.75} emissive="#ff7a2e" emissiveIntensity={interactive && hover ? 0.35 : 0} />
+    <group position={RACK}>
+      {[-0.25, 0.25].map((z) => (
+        <mesh key={z} castShadow position={[0, 0.42, z]}>
+          <boxGeometry args={[0.04, 0.84, 0.04]} />
+          <meshStandardMaterial color="#1b1f29" metalness={0.8} roughness={0.3} />
+        </mesh>
+      ))}
+      {[0.82, 0.165].map((y) => (
+        <mesh key={y} position={[0, y, 0]} castShadow receiveShadow>
+          <boxGeometry args={[0.3, 0.03, 0.56]} />
+          <meshStandardMaterial color="#1b1f29" metalness={0.8} roughness={0.3} />
+        </mesh>
+      ))}
+      {[-0.14, 0.14].map((z) => (
+        <mesh key={z} castShadow position={[0, 0.3, z]}>
+          <sphereGeometry args={[BALL_R, 32, 24]} />
+          <meshStandardMaterial color="#c4571a" roughness={0.8} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+/** Light box with a stylised knee x-ray: two ACL reconstructions. */
+function XRay() {
+  const tex = useMemo(
+    () =>
+      canvasTexture(400, 560, (c, w, h) => {
+        c.fillStyle = '#0a1624'
+        c.fillRect(0, 0, w, h)
+        const bone = (x: number, y: number, bw: number, bh: number) => {
+          const g = c.createLinearGradient(x, 0, x + bw, 0)
+          g.addColorStop(0, 'rgba(190,220,255,0.15)')
+          g.addColorStop(0.5, 'rgba(220,240,255,0.75)')
+          g.addColorStop(1, 'rgba(190,220,255,0.15)')
+          c.fillStyle = g
+          c.beginPath()
+          c.roundRect(x, y, bw, bh, 40)
+          c.fill()
+        }
+        bone(130, -40, 140, 260) // femur
+        bone(140, 280, 120, 320) // tibia
+        c.fillStyle = 'rgba(220,240,255,0.5)'
+        c.beginPath()
+        c.ellipse(200, 250, 58, 22, 0, 0, Math.PI * 2)
+        c.fill()
+        // two graft tunnels + screws
+        ;[[-14, 0], [16, 1]].forEach(([dx, k]) => {
+          c.strokeStyle = k ? 'rgba(255,190,110,0.95)' : 'rgba(255,140,120,0.95)'
+          c.lineWidth = 7
+          c.beginPath()
+          c.moveTo(196 + dx, 170)
+          c.lineTo(206 + dx * 1.4, 330)
+          c.stroke()
+          c.fillStyle = c.strokeStyle
+          c.fillRect(190 + dx, 160, 14, 26)
+          c.fillRect(200 + dx * 1.4, 320, 14, 26)
+        })
+        c.fillStyle = 'rgba(200,230,255,0.85)'
+        c.font = '600 24px JetBrains Mono, monospace'
+        c.fillText('L KNEE · ACL ×2', 24, h - 26)
+        c.font = '400 16px JetBrains Mono, monospace'
+        c.fillText('two tears · two comebacks', 24, h - 52)
+      }),
+    [],
+  )
+  return (
+    <group position={[6.95, 2.25, -1.45]} rotation={[0, -Math.PI / 2, 0]}>
+      <mesh castShadow>
+        <boxGeometry args={[0.6, 0.8, 0.05]} />
+        <meshStandardMaterial color="#d8dbe2" metalness={0.6} roughness={0.3} />
+      </mesh>
+      <mesh position={[0, 0, 0.027]}>
+        <planeGeometry args={[0.52, 0.72]} />
+        <meshBasicMaterial map={tex} toneMapped={false} color={[1.5, 1.6, 1.8]} />
+      </mesh>
+      <pointLight position={[0, 0, 0.3]} color="#9cc8ff" intensity={1.2} distance={1.6} />
+    </group>
+  )
+}
+
+/** Gold medal + ribbon: Iran U21 national champions. */
+function Medal() {
+  const tex = useMemo(
+    () =>
+      canvasTexture(256, 256, (c, w, h) => {
+        const g = c.createRadialGradient(110, 100, 10, 128, 128, 128)
+        g.addColorStop(0, '#fff1b8')
+        g.addColorStop(0.5, '#e0b04a')
+        g.addColorStop(1, '#8a5f12')
+        c.fillStyle = g
+        c.beginPath()
+        c.arc(w / 2, h / 2, 124, 0, Math.PI * 2)
+        c.fill()
+        c.strokeStyle = 'rgba(90,60,10,0.6)'
+        c.lineWidth = 6
+        c.beginPath()
+        c.arc(w / 2, h / 2, 100, 0, Math.PI * 2)
+        c.stroke()
+        c.fillStyle = '#5a3c08'
+        c.textAlign = 'center'
+        c.font = '800 60px Inter, sans-serif'
+        c.fillText('U21', w / 2, 128)
+        c.font = '600 22px Inter, sans-serif'
+        c.fillText('CHAMPIONS', w / 2, 166)
+      }),
+    [],
+  )
+  return (
+    <group position={[6.95, 1.75, -3.35]} rotation={[0, -Math.PI / 2, 0]}>
+      <mesh position={[0, 0.2, 0.01]} rotation={[0, 0, 0.25]}>
+        <planeGeometry args={[0.06, 0.38]} />
+        <meshStandardMaterial color="#239f40" />
+      </mesh>
+      <mesh position={[0.035, 0.2, 0.012]} rotation={[0, 0, -0.25]}>
+        <planeGeometry args={[0.06, 0.38]} />
+        <meshStandardMaterial color="#da0000" />
+      </mesh>
+      <mesh position={[0, 0, 0.03]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <cylinderGeometry args={[0.11, 0.11, 0.015, 48]} />
+        <meshStandardMaterial attach="material-0" color="#c99a3a" metalness={1} roughness={0.25} />
+        <meshStandardMaterial attach="material-1" map={tex} metalness={0.9} roughness={0.3} />
+        <meshStandardMaterial attach="material-2" map={tex} metalness={0.9} roughness={0.3} />
       </mesh>
     </group>
   )
@@ -278,7 +272,9 @@ export function Basketball() {
         <Hoop />
         <Jersey />
         <CourtKey />
-        <Balls />
+        <Rack />
+        <XRay />
+        <Medal />
         <Spot position={[4.4, 4.1, -1.0]} target={[5.0, 2.6, -4.6]} angle={0.55} penumbra={0.7} intensity={22} distance={8} color="#ffe1b8" castShadow={false} />
       </group>
     </Hotspot>

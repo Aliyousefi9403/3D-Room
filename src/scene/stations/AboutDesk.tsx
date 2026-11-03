@@ -1,4 +1,7 @@
 import { useMemo } from 'react'
+import * as THREE from 'three'
+import { useLoader } from '@react-three/fiber'
+import { profile } from '../../content'
 import { RoundedBox, Float } from '@react-three/drei'
 import { Hotspot } from '../Hotspot'
 import { canvasTexture } from '../textures'
@@ -84,7 +87,10 @@ function NamePlate() {
 }
 
 export function AboutDesk() {
-  const cv = useMemo(cvTexture, [])
+  const cvImg = useLoader(THREE.TextureLoader, profile.cvImage)
+  useMemo(() => ((cvImg.colorSpace = THREE.SRGBColorSpace), (cvImg.anisotropy = 8)), [cvImg])
+  const cv = cvImg
+  void cvTexture
   const screen = useMemo(laptopTexture, [])
   return (
     <Hotspot id="about" label={[4.7, 1.7, 2.3]}>
@@ -107,7 +113,7 @@ export function AboutDesk() {
         {/* CV: the hero object */}
         <Float speed={2} rotationIntensity={0.05} floatIntensity={0.15} floatingRange={[0, 0.03]}>
           <mesh position={[0.05, 0.81, 0.12]} rotation={[-Math.PI / 2, 0, 0.12]} castShadow>
-            <planeGeometry args={[0.42, 0.58]} />
+            <planeGeometry args={[0.42, 0.594]} />
             <meshStandardMaterial map={cv} roughness={0.85} emissive="#fff6e0" emissiveIntensity={0.08} />
           </mesh>
         </Float>

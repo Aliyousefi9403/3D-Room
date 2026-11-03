@@ -24,7 +24,7 @@ export function AboutPanel() {
         <div>
           <div className="sec-kicker">The paper on the desk</div>
           <h4>Curriculum Vitae</h4>
-          <span className="muted">PDF · always the latest version</span>
+          <span className="muted">One page · PDF</span>
         </div>
         {cvReady ? (
           <a className="btn btn-primary" href={profile.cvUrl} download>
@@ -32,6 +32,18 @@ export function AboutPanel() {
           </a>
         ) : null}
       </div>
+      <a className="cv-preview" href={profile.cvUrl} target="_blank" rel="noreferrer">
+        <img src={profile.cvImage} alt="Ali Yousefi CV" />
+      </a>
+      <Section title="Experience">
+        {profile.experience.map((e) => (
+          <div key={e.what} className="edu">
+            <b>{e.what}</b>
+            <span>{e.where}</span>
+            <em>{e.when}</em>
+          </div>
+        ))}
+      </Section>
       <Section title="Education">
         {profile.education.map((e) => (
           <div key={e.what} className="edu">
@@ -54,6 +66,7 @@ export function AboutPanel() {
           ))}
         </div>
       </Section>
+      <p className="fine" style={{ marginTop: 18 }}>{profile.rightToWork}</p>
       <Section title="Get in touch">
         <div className="links">
           <a className="btn btn-primary" href={`mailto:${profile.email}`}>

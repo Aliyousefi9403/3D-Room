@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 import type { Link } from '../content'
+import { useRoom } from '../store'
 
 export const isTodo = (s?: string) => !!s && s.trim().startsWith('✎')
 const strip = (s: string) => s.replace(/^\s*✎\s*/, '')
@@ -15,12 +16,16 @@ export function Links({ links }: { links: Link[] }) {
   return (
     <div className="links">
       {links.map((l) =>
-        isTodo(l.href) ? (
+        l.href.startsWith('#read:') ? (
+          <button key={l.label} className="btn btn-primary" onClick={() => useRoom.getState().setReader(l.href.slice(6))}>
+            {l.label}
+          </button>
+        ) : isTodo(l.href) ? (
           <span key={l.label} className="btn btn-ghost is-disabled" title="Add the link in src/content.ts">
             {l.label} <em>soon</em>
           </span>
         ) : (
-          <a key={l.label} className="btn" href={l.href} target="_blank" rel="noreferrer">
+          <a key={l.label} className="btn" href={l.href} target={l.href.startsWith('mailto:') ? undefined : '_blank'} rel="noreferrer" download={l.href.endsWith('.pdf') ? '' : undefined}>
             {l.label} <span aria-hidden>↗</span>
           </a>
         ),
