@@ -19,6 +19,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Refuse to deploy a commit that isn't the tip of main
+        run: |
+          head=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$head" != "$GITHUB_SHA" ]; then
+            echo "::error::$GITHUB_SHA is not the latest main ($head). Re-run the newest workflow run instead."
+            exit 1
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 22
