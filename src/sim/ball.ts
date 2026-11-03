@@ -22,6 +22,9 @@ export const ball = {
   inFlight: false,
 }
 
+/** shots attempted / made per shooter, for CourtVision */
+export const shotStats: Record<string, { att: number; made: number }> = {}
+
 type ScoreFn = (shooter: string | null) => void
 const scored = new Set<ScoreFn>()
 export const onScore = (fn: ScoreFn) => (scored.add(fn), () => scored.delete(fn))
@@ -48,6 +51,7 @@ export function shoot(shooter: string, vel: THREE.Vector3, from?: THREE.Vector3)
   ball.shooter = shooter
   ball.inFlight = true
   ball.wasAbove = false
+  ;(shotStats[shooter] ??= { att: 0, made: 0 }).att++
 }
 
 const tmp = new THREE.Vector3()
@@ -109,6 +113,7 @@ export function stepBall(dt: number, now: number) {
       ball.wasAbove = false
       ball.vel.x *= 0.2
       ball.vel.z *= 0.2
+      if (ball.shooter) (shotStats[ball.shooter] ??= { att: 0, made: 0 }).made++
       scored.forEach((fn) => fn(ball.shooter))
     }
     if (ball.pos.y < RIM.y - 0.3) ball.wasAbove = false

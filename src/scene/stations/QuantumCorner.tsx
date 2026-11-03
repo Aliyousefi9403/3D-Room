@@ -5,6 +5,7 @@ import { Html } from '@react-three/drei'
 import { Hotspot } from '../Hotspot'
 import { qubit, measure } from '../../sim/qubit'
 import { useRoom } from '../../store'
+import { TeslaCoil, } from './TeslaCoil'
 
 const POS: [number, number, number] = [3.2, 0, -0.4]
 
@@ -231,6 +232,7 @@ export function QuantumCorner() {
         <Cradle />
         <Top />
       </group>
+      <TeslaCoil />
     </Hotspot>
   )
 }

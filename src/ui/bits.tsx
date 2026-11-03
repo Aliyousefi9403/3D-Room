@@ -2,6 +2,15 @@ import { ReactNode } from 'react'
 import type { Link } from '../content'
 import { useRoom } from '../store'
 
+export function openLib(id: string) {
+  const st = useRoom.getState()
+  import('../scene/stations/Library').then(({ ORDER }) => {
+    const i = ORDER.findIndex((x) => x.id === id)
+    st.go('library')
+    if (i >= 0) setTimeout(() => useRoom.getState().setLibIndex(i), 50)
+  })
+}
+
 export const isTodo = (s?: string) => !!s && s.trim().startsWith('✎')
 const strip = (s: string) => s.replace(/^\s*✎\s*/, '')
 
@@ -16,7 +25,11 @@ export function Links({ links }: { links: Link[] }) {
   return (
     <div className="links">
       {links.map((l) =>
-        l.href.startsWith('#read:') ? (
+        l.href.startsWith('#lib:') ? (
+          <button key={l.label} className="btn" onClick={() => openLib(l.href.slice(5))}>
+            {l.label} →
+          </button>
+        ) : l.href.startsWith('#read:') ? (
           <button key={l.label} className="btn btn-primary" onClick={() => useRoom.getState().setReader(l.href.slice(6))}>
             {l.label}
           </button>

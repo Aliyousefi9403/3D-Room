@@ -5,6 +5,8 @@ import { RoundedBox } from '@react-three/drei'
 import { Hotspot } from '../Hotspot'
 import { Spot } from '../Spot'
 import { canvasTexture } from '../textures'
+import { openLib } from '../../ui/bits'
+import { useRoom } from '../../store'
 
 const RIM: [number, number, number] = [5.0, 3.05, -4.38]
 const BALL_R = 0.12
@@ -132,6 +134,61 @@ function CourtKey() {
       <planeGeometry args={[3.4, 3.4]} />
       <meshStandardMaterial map={tex} transparent roughness={0.5} depthWrite={false} />
     </mesh>
+  )
+}
+
+/** CourtVision camera mounted above the backboard, looking down at the key. */
+function VisionCam() {
+  const led = useRef<THREE.MeshBasicMaterial>(null)
+  const cone = useRef<THREE.LineSegments>(null)
+  // frustum: lens → four corners of the key, plus the key outline on the floor
+  const frustum = useMemo(() => {
+    const lens = new THREE.Vector3(0, -0.06, 0.12)
+    const c = [
+      [-1.4, -4.12, 0.1],
+      [1.4, -4.12, 0.1],
+      [1.4, -4.12, 3.0],
+      [-1.4, -4.12, 3.0],
+    ].map(([x, y, z]) => new THREE.Vector3(x, y, z))
+    const pts: THREE.Vector3[] = []
+    c.forEach((p, i) => pts.push(lens, p, p, c[(i + 1) % 4]))
+    return new THREE.BufferGeometry().setFromPoints(pts)
+  }, [])
+  const station = useRoom((s) => s.station)
+  const [hover, setHover] = useState(false)
+  useFrame(({ clock }) => {
+    led.current?.color.setRGB(Math.sin(clock.elapsedTime * 4) > 0 ? 4 : 0.4, 0.15, 0.2)
+    if (cone.current) ((cone.current as unknown as THREE.LineSegments).material as THREE.LineBasicMaterial).opacity = station === 'basketball' ? 0.35 + Math.sin(clock.elapsedTime * 2) * 0.1 : 0.08
+  })
+  return (
+    <group position={[5.0, 4.12, -4.7]}>
+      <lineSegments ref={cone} geometry={frustum}>
+        <lineBasicMaterial color={[0.4, 0.9, 2.2]} transparent opacity={0.1} toneMapped={false} />
+      </lineSegments>
+      <group
+        rotation={[0.75, 0, 0]}
+        onPointerOver={(e) => (e.stopPropagation(), setHover(true), (document.body.style.cursor = 'pointer'))}
+        onPointerOut={() => (setHover(false), (document.body.style.cursor = ''))}
+        onClick={(e) => (e.stopPropagation(), openLib('courtvision'))}
+      >
+        <mesh castShadow>
+          <boxGeometry args={[0.18, 0.12, 0.26]} />
+          <meshStandardMaterial color={hover ? '#2a2f3a' : '#15181f'} metalness={0.6} roughness={0.35} />
+        </mesh>
+        <mesh position={[0, 0, 0.15]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.045, 0.05, 0.05, 24]} />
+          <meshStandardMaterial color="#05060a" metalness={0.8} roughness={0.1} />
+        </mesh>
+        <mesh position={[0, 0, 0.176]}>
+          <circleGeometry args={[0.032, 24]} />
+          <meshBasicMaterial color={[0.3, 0.6, 1.6]} toneMapped={false} />
+        </mesh>
+        <mesh position={[0.06, 0.045, 0.1]}>
+          <sphereGeometry args={[0.01, 8, 8]} />
+          <meshBasicMaterial ref={led} toneMapped={false} />
+        </mesh>
+      </group>
+    </group>
   )
 }
 
@@ -273,6 +330,7 @@ export function Basketball() {
         <Jersey />
         <CourtKey />
         <Rack />
+        <VisionCam />
         <XRay />
         <Medal />
         <Spot position={[4.4, 4.1, -1.0]} target={[5.0, 2.6, -4.6]} angle={0.55} penumbra={0.7} intensity={22} distance={8} color="#ffe1b8" castShadow={false} />

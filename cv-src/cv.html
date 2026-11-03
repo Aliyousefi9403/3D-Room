@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Ali Yousefi CV</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Lato, Carlito, Calibri, sans-serif; font-size: 8.85pt; line-height: 1.19; color: #111; }
+.page { width: 210mm; height: 297mm; padding: 7mm 10.5mm 3mm; }
+h1 { text-align: center; font-size: 17pt; letter-spacing: 0.02em; margin: 0; }
+.contact { text-align: center; font-size: 8.7pt; margin: 1pt 0 0; }
+.contact a { color: #111; text-decoration: none; }
+h2 { font-size: 10pt; margin: 3.6pt 0 1pt; padding-bottom: 1pt; border-bottom: 0.8pt solid #222; }
+.row { display: flex; justify-content: space-between; font-weight: 700; margin-top: 2pt; }
+.sub { font-style: italic; margin: 0.5pt 0 0 7pt; }
+ul { margin: 0.5pt 0 0; padding-left: 17pt; }
+li { margin: 0; }
+p { margin: 1pt 0 0 7pt; }
+.note { font-style: italic; margin: 1pt 0 1pt 7pt; }
+b { font-weight: 700; }
+</style></head>
+<body><div class="page">
+<h1>ALI YOUSEFI</h1>
+<div class="contact">London, United Kingdom | yousefi.ali@icloud.com | +44 7377 253651 | <a href="https://www.linkedin.com/in/ali-yousefi-6806b3268/">linkedin.com/in/ali-yousefi-6806b3268</a></div>
+<div class="contact">Interactive portfolio: <a href="https://aliyousefi9403.github.io/3D-Room/">aliyousefi9403.github.io/3D-Room</a> | YouTube: <a href="https://www.youtube.com/@Breachlab101">youtube.com/@Breachlab101</a></div>
+
+<h2>PROFILE</h2>
+<p>Final-year Computer Science student focused on AI security and applied AI. Lead project is AegisRAG, research on detecting knowledge base poisoning in RAG systems, written up as a preprint with Dr Hafizul Asad and Dr Nikos Komninos. Currently on the Hack The Box AI Red Teamer path alongside CompTIA Security+.</p>
+
+<h2>EXPERIENCE</h2>
+<div class="row"><span>AI Engineering Intern | Adaptive Swarm</span><span>2026 – Present</span></div>
+<ul>
+<li>Develop and evaluate models on a node-based, self-adaptive AI platform, from data ingestion to signals scored on live markets, including a Bitcoin prediction model built from technical indicators.</li>
+<li>Give the founders structured feedback as an early engineering user, earning full access to the model and data layer.</li>
+</ul>
+<div class="row"><span>Blockchain Security and Market Analyst | Batis Group</span><span>2025 – May 2026</span></div>
+<ul>
+<li>Screened Ethereum and Tron tokens for rug-pull risk, checking ownership, mint rights, liquidity locks and holder spread.</li>
+<li>Owned company wallet and key management, redesigning storage and recovery to remove single points of failure.</li>
+</ul>
+<div class="row"><span>Freelance Web Developer | International B2B Sales Representative, Kaveh Float</span><span>2022 – 2025</span></div>
+<ul>
+<li>Delivered 2 business websites, including farazjam.com, from brief to launch as sole point of contact.</li>
+<li>Closed 4 international B2B deals across Italy, Germany, China and the Middle East, negotiating terms in a second language.</li>
+</ul>
+
+<h2>PROJECTS</h2>
+<div class="note">Repositories private for security reasons unless linked. Walkthrough or live demo available on request.</div>
+<div class="row"><span>AegisRAG | Detecting Knowledge Base Poisoning in RAG Systems</span><span>2026 – 2027</span></div>
+<div class="sub">Final Year Individual Project | Python, FastAPI, Qdrant, Next.js | Preprint: “Reading the Poison”, with Dr Hafizul Asad and Dr Nikos Komninos</div>
+<ul>
+<li>Engineered a RAG security testbed over 200 MITRE ATT&amp;CK and CAPEC passages and 44 benchmark questions; showed synonym-swap poisoning cuts correctness by 22% (0.714 to 0.555), mainly by displacing evidence.</li>
+<li>Created a relative-entropy detector reaching 0.95 AUROC that names the swapped word in 22 of 27 flagged passages.</li>
+<li>Halved poisoned text reaching the model (41% to 20%) with a filter at no measurable clean-accuracy cost; added an LTL runtime monitor with quarantine memory.</li>
+<li>Verified all 73 headline claims against 5,000 SHA-256 checksummed run records, backed by 285 passing tests.</li>
+</ul>
+<div class="row"><span>The Room | Interactive 3D Portfolio with a Live Multi-Agent SOC</span><span>2026</span></div>
+<div class="sub">TypeScript, React Three Fiber, WebGL, WebSockets | <a href="https://aliyousefi9403.github.io/3D-Room/" style="color:#111">aliyousefi9403.github.io/3D-Room</a></div>
+<ul>
+<li>Built a browser-based 3D room with 11 working stations, a page-flip paper reader and live BTC/ETH data over a Coinbase WebSocket.</li>
+<li>Designed Night Watch, a simulated SOC: 5 sliding-window detection rules mapped to MITRE ATT&amp;CK, incident correlation, and 3 agents with A* navigation that triage and contain attacks launched by visitors.</li>
+</ul>
+<div class="row"><span>CourtVision | Live Basketball Match Analyser</span><span></span></div>
+<ul>
+<li>Built a machine-learning system that tracks and re-identifies every player in a live game, recognises their actions, and generates post-game analysis per player plus a scouting plan against the next opponent.</li>
+</ul>
+<div class="row"><span>AI Lease and Contract Analyser | Retrieval-Augmented Generation</span><span>2026</span></div>
+<ul>
+<li>Constructing a RAG pipeline that maps each tenancy clause to its governing statute and flags non-standard, missing and unenforceable terms, scored against a hand-labelled test set. <i>Python, LLM APIs, embeddings.</i></li>
+</ul>
+<div class="row"><span>Aris | Voice and Gesture Controlled System Supervisor</span><span>2026</span></div>
+<ul>
+<li>Created a sandboxed local assistant with a FastAPI WebSocket backend, a SQLite indexer over 12 git repos, a voice and gesture UI, and OAuth 2.0 with rotating refresh tokens. <i>Python, SQLite, MediaPipe.</i></li>
+</ul>
+<div class="row"><span>quantdesk | Systematic Trading Research Stack</span><span>2026</span></div>
+<ul>
+<li>Engineered the research harness (DuckDB and Parquet store, cost model, backtester, walk-forward tests) and a multi-asset trend strategy with inverse-volatility sizing and volatility targeting. <i>Python.</i></li>
+</ul>
+<div class="row"><span>Pharmacy Ordering and Inventory System | Team Software Project (Project Manager)</span><span>2026</span></div>
+<ul>
+<li>Led requirements, design and sprint planning, and co-wrote the C# front end and JWT-secured REST API.</li>
+</ul>
+
+<h2>SECURITY PRACTICE AND CERTIFICATION</h2>
+<p><b>In progress:</b> Hack The Box AI Red Teamer path (primary focus), CompTIA Security+ and TryHackMe Red Teaming, due by January 2027. <b>Completed:</b> TryHackMe Cyber Security 101 path plus web and cloud exploitation rooms.</p>
+<ul>
+<li><b>AI red teaming:</b> practising prompt injection, data poisoning and output manipulation, feeding directly into AegisRAG.</li>
+<li><b>Web:</b> found an exposed .git directory on a Flask host with gobuster and rebuilt the app source from loose objects.</li>
+<li><b>Cloud:</b> abused an AWS Cognito pool issuing credentials to anonymous users to enumerate an over-permissive DynamoDB table.</li>
+</ul>
+
+<h2>TECHNICAL SKILLS</h2>
+<p><b>Security:</b> LLM red teaming, RAG adversarial testing, detection engineering, web app testing, gobuster, Wireshark, git forensics, cloud IAM, Slither, OAuth 2.0.<br>
+<b>Languages:</b> Python, TypeScript, Java, C#, JavaScript, SQL, Bash.<br>
+<b>Systems and Cloud:</b> Linux (Kali, Ubuntu), macOS, Windows, TCP/IP, AWS (S3, Cognito, DynamoDB, IAM), Google Cloud, Azure, Docker.<br>
+<b>Tools and AI:</b> Git, FastAPI, React, Next.js, Three.js / React Three Fiber, Qdrant, REST APIs, WebSockets, MySQL, DuckDB, Parquet, LLM APIs, embeddings, vector search.</p>
+
+<h2>EDUCATION</h2>
+<div class="row"><span>City St George's, University of London | BSc (Hons) Computer Science</span><span>2024 – 2027</span></div>
+<p>Predicted 2:1 or above. Final year: Cloud Computing, Programming and Mathematics for AI, Theory of Computation, 45-credit Individual Project (AegisRAG). Earlier: Networks, Operating Systems, Algorithms.</p>
+
+<h2>ADDITIONAL</h2>
+<p><b>Content:</b> write and code 2D animated cybersecurity explainers for the BreachLab YouTube channel. <b>Languages:</b> English and Turkish (fluent), Persian (native). <b>Right to work:</b> eligible for a placement year now, and for the UK Graduate visa (18 months, no sponsorship needed) after graduating in 2027. <b>Achievements:</b> Iran U18 National Basketball Team (#13); Iran U21 National Basketball Champion; UKMT Senior Mathematical Challenge Silver and Senior Kangaroo Certificate of Merit (2022).</p>
+</div></body></html>

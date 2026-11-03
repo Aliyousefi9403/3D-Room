@@ -1,7 +1,9 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
-import { RoundedBox } from '@react-three/drei'
+import { RoundedBox, Html } from '@react-three/drei'
+import { useRoom } from '../../store'
+import { studio } from '../../content'
 import { Hotspot } from '../Hotspot'
 
 const W = 960
@@ -265,7 +267,55 @@ export function drawEpisode(c: CanvasRenderingContext2D, t: number) {
   c.fillText(`▶  ${ss(t)} / ${ss(EP_LEN)}   Security, Animated · Ep. 1`, 12, H - 8)
 }
 
+/** The TV face: the selected BreachLab video's real thumbnail with a play badge. */
+function drawThumb(c: CanvasRenderingContext2D, img: HTMLImageElement | null, title: string, short: boolean, t: number) {
+  c.fillStyle = '#0b0f1a'
+  c.fillRect(0, 0, W, H)
+  if (img) {
+    if (short) {
+      // shorts are vertical: blurred fill + centred frame
+      c.filter = 'blur(18px) brightness(0.5)'
+      c.drawImage(img, -40, -40, W + 80, H + 80)
+      c.filter = 'none'
+      const h = H
+      const w = (img.width / img.height) * h
+      c.drawImage(img, (W - w) / 2, 0, w, h)
+    } else c.drawImage(img, 0, 0, W, H)
+  }
+  const g = c.createLinearGradient(0, H * 0.5, 0, H)
+  g.addColorStop(0, 'rgba(0,0,0,0)')
+  g.addColorStop(1, 'rgba(0,0,0,0.85)')
+  c.fillStyle = g
+  c.fillRect(0, 0, W, H)
+  // play badge
+  const pulse = 1 + Math.sin(t * 3) * 0.04
+  c.save()
+  c.translate(W / 2, H / 2 - 20)
+  c.scale(pulse, pulse)
+  c.fillStyle = 'rgba(255,0,0,0.92)'
+  c.beginPath()
+  c.roundRect(-58, -40, 116, 80, 20)
+  c.fill()
+  c.fillStyle = '#fff'
+  c.beginPath()
+  c.moveTo(-16, -22)
+  c.lineTo(26, 0)
+  c.lineTo(-16, 22)
+  c.closePath()
+  c.fill()
+  c.restore()
+  c.fillStyle = '#fff'
+  c.font = '700 28px Inter, sans-serif'
+  c.fillText(title.length > 58 ? title.slice(0, 56) + '…' : title, 30, H - 58)
+  c.fillStyle = 'rgba(255,255,255,0.7)'
+  c.font = '500 18px Inter, sans-serif'
+  c.fillText(`BreachLab · youtube.com/@Breachlab101${short ? ' · Short' : ''}`, 30, H - 26)
+}
+
 export function Studio() {
+  const station = useRoom((s) => s.station)
+  const video = useRoom((s) => s.video)
+  const v = studio.videos.find((x) => x.id === video) ?? studio.videos[0]
   const { tex, ctx } = useMemo(() => {
     const canvas = document.createElement('canvas')
     canvas.width = W
@@ -275,16 +325,28 @@ export function Studio() {
     t.anisotropy = 8
     return { tex: t, ctx: canvas.getContext('2d')! }
   }, [])
+  const img = useRef<HTMLImageElement | null>(null)
+  useEffect(() => {
+    const i = new Image()
+    i.crossOrigin = 'anonymous'
+    i.onload = () => (img.current = i)
+    i.onerror = () => (img.current = null)
+    img.current = null
+    i.src = `https://i.ytimg.com/vi/${v.id}/${v.kind === 'short' ? 'hq2' : 'maxresdefault'}.jpg`
+  }, [v.id, v.kind])
   const acc = useRef(0)
   const ring = useRef<THREE.MeshBasicMaterial>(null)
   useFrame(({ clock }, dt) => {
     acc.current += dt
-    if (acc.current < 1 / 24) return
+    if (acc.current < 1 / 20) return
     acc.current = 0
-    drawEpisode(ctx, clock.elapsedTime % EP_LEN)
+    // no thumbnail (offline)? fall back to the animated explainer
+    if (img.current) drawThumb(ctx, img.current, v.t, v.kind === 'short', clock.elapsedTime)
+    else drawEpisode(ctx, clock.elapsedTime % EP_LEN)
     tex.needsUpdate = true
     void ring
   })
+  const playing = station === 'studio'
   const sw = 2.2
   const sh = (sw * H) / W
   return (
@@ -297,6 +359,20 @@ export function Studio() {
           <planeGeometry args={[sw, sh]} />
           <meshBasicMaterial map={tex} toneMapped={false} color={[1.2, 1.2, 1.2]} />
         </mesh>
+        {playing && (
+          <Html transform position={[0, 2.05, 0.03]} scale={sw / 960 * 40} zIndexRange={[5, 0]} className="tv-html">
+            <iframe
+              key={v.id}
+              width={960}
+              height={540}
+              src={`https://www.youtube-nocookie.com/embed/${v.id}?rel=0&modestbranding=1&playsinline=1`}
+              title={v.t}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{ border: 0, display: 'block', background: '#000' }}
+            />
+          </Html>
+        )}
         <pointLight position={[0, 2.0, 0.8]} color="#7f9cff" intensity={2} distance={3} />
         {/* ring light on a stand */}
         <group position={[1.35, 0, 0.9]}>

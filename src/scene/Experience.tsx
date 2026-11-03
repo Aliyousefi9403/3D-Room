@@ -1,5 +1,5 @@
-import { Suspense } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Suspense, useRef } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { Environment, Lightformer, AdaptiveDpr, Preload, PerformanceMonitor } from '@react-three/drei'
 import { EffectComposer, Bloom, Vignette, N8AO, Selection, Outline, SMAA, ToneMapping } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
@@ -16,6 +16,7 @@ import { NightWatch } from './stations/NightWatch'
 import { London } from './stations/London'
 import { QuantumCorner } from './stations/QuantumCorner'
 import { Studio } from './stations/Studio'
+import { surgeLevel } from './stations/TeslaCoil'
 import { Basketball } from './stations/Basketball'
 import { AboutDesk } from './stations/AboutDesk'
 import { useRoom } from '../store'
@@ -23,11 +24,26 @@ import { useRoom } from '../store'
 RectAreaLightUniformsLib.init()
 
 function Lights() {
+  const amb = useRef<THREE.AmbientLight>(null)
+  const hemi = useRef<THREE.HemisphereLight>(null)
+  const sun = useRef<THREE.DirectionalLight>(null)
+  const warm = useRef<THREE.PointLight>(null)
+  useFrame(() => {
+    // Tesla surge: the room browns out and flickers, then recovers
+    const s = surgeLevel()
+    const flick = s > 0 ? (Math.random() < 0.35 ? 1.6 : 0.15) : 1
+    const k = s > 0 ? 1 - s * 0.85 + s * 0.85 * flick * Math.random() : 1
+    if (amb.current) amb.current.intensity = 0.18 * k + s * 0.25 * flick
+    if (hemi.current) hemi.current.intensity = 0.35 * k
+    if (sun.current) sun.current.intensity = 1.1 * k
+    if (warm.current) warm.current.intensity = 6 * k
+  })
   return (
     <>
-      <ambientLight intensity={0.18} color="#8090c0" />
-      <hemisphereLight args={['#6b7cff', '#2a1a10', 0.35]} />
+      <ambientLight ref={amb} intensity={0.18} color="#8090c0" />
+      <hemisphereLight ref={hemi} args={['#6b7cff', '#2a1a10', 0.35]} />
       <directionalLight
+        ref={sun}
         castShadow
         position={[-5, 9, 6]}
         intensity={1.1}
@@ -42,7 +58,7 @@ function Lights() {
         shadow-camera-near={1}
         shadow-camera-far={30}
       />
-      <pointLight position={[0, 3.6, 1]} intensity={6} distance={10} color="#ffcf9a" />
+      <pointLight ref={warm} position={[0, 3.6, 1]} intensity={6} distance={10} color="#ffcf9a" />
     </>
   )
 }

@@ -7,6 +7,7 @@ import { bots, stepCrew, crew, pingLog, Bot as BotT } from '../../sim/crew'
 import { ball, stepBall, shoot, solveShot, RIM, BALL_R, onScore } from '../../sim/ball'
 import { devices, stepNetwork, DeviceId } from '../../sim/network'
 import { canvasTexture } from '../textures'
+import { stepVision, action } from '../../sim/courtvision'
 
 function glowTexture() {
   const c = document.createElement('canvas')
@@ -18,6 +19,22 @@ function glowTexture() {
   x.fillStyle = g
   x.fillRect(0, 0, 128, 128)
   return new THREE.CanvasTexture(c)
+}
+
+function TrackBox({ b }: { b: BotT }) {
+  const [, f] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => f((x) => x + 1), 250)
+    return () => clearInterval(id)
+  }, [])
+  const i = bots.indexOf(b) + 1
+  return (
+    <div className="cv-box" style={{ ['--agent' as string]: b.color, width: 70, height: 150 }}>
+      <span>
+        #{i} {b.name} · {action(b.id)}
+      </span>
+    </div>
+  )
 }
 
 function Bot({ b }: { b: BotT }) {
@@ -116,6 +133,11 @@ function Bot({ b }: { b: BotT }) {
           </mesh>
         </group>
       </group>
+      {station === 'basketball' && (
+        <Html position={[0, 0.42, 0]} center distanceFactor={5} zIndexRange={[11, 0]} style={{ pointerEvents: 'none' }}>
+          <TrackBox b={b} />
+        </Html>
+      )}
       {show && (say || hover) && (
         <Html position={[0, 0.92, 0]} center zIndexRange={[12, 0]} style={{ pointerEvents: 'none' }}>
           <div className={`bubble ${say?.tone ? `bubble-${say.tone}` : ''}`} style={{ ['--agent' as string]: b.color }}>
@@ -198,10 +220,7 @@ function Ball() {
       setDragging(false)
       const dy = d.y - d.y0
       const dx = d.x - d.x0
-      if (dy < 12) {
-        ball.holder = 'free'
-        return
-      }
+      if (dy < 12) return
       shoot('user', launchVel(dx, dy), hand.clone())
       setTimeout(() => useRoom.getState().shot(false, true), 50)
     }
@@ -213,8 +232,33 @@ function Ball() {
     }
   })
 
+  const idle = useRef(0)
+  const homing = useRef(0)
   useFrame((_, dt) => {
     const m = mesh.current!
+    // a resting free ball finds its way back: to your hand on the court, otherwise to the rack
+    const resting = ball.holder === 'free' && !ball.inFlight && ball.vel.length() < 0.25
+    idle.current = resting ? idle.current + dt : 0
+    if (resting && idle.current > (station === 'basketball' ? 1.2 : 10) && !crew.game) {
+      homing.current = 1
+      idle.current = 0
+    }
+    if (homing.current > 0) {
+      const target = station === 'basketball' ? hand : new THREE.Vector3(5.95, 0.95, -3)
+      if (station === 'basketball') {
+        const dir = new THREE.Vector3()
+        camera.getWorldDirection(dir)
+        hand.copy(camera.position).addScaledVector(dir, 1.6)
+        hand.y = Math.max(hand.y - 0.45, 0.9)
+      }
+      ball.pos.lerp(target, Math.min(1, dt * 3.5))
+      ball.pos.y += Math.sin(Math.min(1, homing.current) * Math.PI) * 0.02
+      ball.vel.set(0, 0, 0)
+      if (ball.pos.distanceTo(target) < 0.05) {
+        homing.current = 0
+        ball.holder = station === 'basketball' ? 'user' : 'rack'
+      }
+    }
     if (ball.holder === 'user') {
       // hold the ball in front of the camera, offset toward the hoop
       const dir = new THREE.Vector3()
@@ -258,7 +302,8 @@ function Ball() {
         onPointerOver={(e) => interactive && (e.stopPropagation(), setHover(true), (document.body.style.cursor = 'grab'))}
         onPointerOut={() => (setHover(false), interactive && (document.body.style.cursor = ''))}
         onPointerDown={(e) => {
-          if (!interactive || ball.holder.length > 4 && ball.holder !== 'free') return
+          if (!interactive || ['sentry', 'analyst', 'medic'].includes(ball.holder)) return
+          homing.current = 0
           e.stopPropagation()
           ball.holder = 'user'
           drag.current = { x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY }
@@ -352,7 +397,11 @@ export function NightWatch() {
   }, [])
   useEffect(() => {
     crew.userAtCourt = station === 'basketball'
-    if (station === 'basketball' && ball.holder !== 'user' && ball.pos.distanceTo(new THREE.Vector3(5.95, 0.95, -3)) > 0.3 && ball.holder !== 'free') ball.holder = 'free'
+    if (station === 'basketball' && !['sentry', 'analyst', 'medic'].includes(ball.holder)) ball.holder = 'user'
+    if (station !== 'basketball' && ball.holder === 'user') {
+      ball.holder = 'free'
+      ball.vel.set(0, 0, 0)
+    }
   }, [station])
   useFrame((_, dt) => {
     const t = performance.now() / 1000
@@ -365,6 +414,7 @@ export function NightWatch() {
       stepBall(h, t)
       rem -= h
     }
+    stepVision()
   })
   return (
     <group>

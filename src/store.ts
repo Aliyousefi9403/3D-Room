@@ -27,6 +27,10 @@ type State = {
   setHovered: (h: string | null) => void
   shot: (made: boolean, attempt?: boolean) => void
   dragging: boolean
+  video: string
+  setVideo: (id: string) => void
+  surge: number
+  fire: () => void
   setDragging: (v: boolean) => void
 }
 
@@ -60,6 +64,10 @@ export const useRoom = create<State>((set) => ({
   setHovered: (hovered) => set({ hovered }),
   shot: (made, attempt) => set((s) => ({ shots: s.shots + (attempt ? 1 : 0), score: s.score + (made ? 1 : 0) })),
   dragging: false,
+  video: 'i7XOZuSWM0Q',
+  setVideo: (video) => set({ video }),
+  surge: -100,
+  fire: () => set({ surge: performance.now() / 1000 }),
   setDragging: (dragging) => set({ dragging }),
 }))
 
@@ -70,7 +78,7 @@ export const stations: { id: Exclude<StationId, 'overview'>; label: string; kick
   { id: 'crew', label: 'Night Watch', kicker: 'Live multi-agent SOC' },
   { id: 'quant', label: 'Trading Desk', kicker: 'quantdesk · live markets' },
   { id: 'swarm', label: 'Swarm Table', kicker: 'Adaptive Swarm · Bitcoin model' },
-  { id: 'studio', label: 'Studio', kicker: 'Animated security explainers' },
+  { id: 'studio', label: 'Studio', kicker: 'BreachLab on YouTube' },
   { id: 'quantum', label: 'Quantum Corner', kicker: 'Measure a qubit' },
   { id: 'basketball', label: 'Court', kicker: 'Iran U18 · #13' },
   { id: 'window', label: 'The View', kicker: 'London from my window' },

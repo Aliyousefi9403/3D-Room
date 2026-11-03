@@ -4,6 +4,7 @@ import { useRoom } from '../../store'
 import { Section, KV, Bullets, Links, T } from '../bits'
 import { feeds, onMarket, read } from '../../market'
 import { qubit, onQubit, measure, gate, prepare, p0 } from '../../sim/qubit'
+import { cvTracks } from '../../sim/courtvision'
 
 const useMarket = () => {
   const [, f] = useReducer((x) => x + 1, 0)
@@ -220,6 +221,24 @@ export function QuantumPanel() {
       <p>
         <T>{quantum.note}</T>
       </p>
+      <Section kicker="Reading" title="How I got into it">
+        <div className="reading">
+          {quantum.reading.map((r) => (
+            <div key={r.t}>
+              <b>{r.t}</b>
+              <span>{r.a}</span>
+            </div>
+          ))}
+        </div>
+      </Section>
+      <Section kicker="My favourite character of all time" title="Nikola Tesla">
+        <p>Alternating current, the induction motor, radio, wireless power, and machines he built in his head before he built them in metal. Reading his life is the reason there’s a Tesla coil in this corner.</p>
+        <div className="links">
+          <button className="btn btn-primary" onClick={() => useRoom.getState().fire()}>
+            ⚡ Fire the coil
+          </button>
+        </div>
+      </Section>
       <Section kicker="Try it" title="Measure a qubit">
         <div className="qb">
           <div className="qb-state">
@@ -283,21 +302,26 @@ export function QuantumPanel() {
 
 // ── Studio ───────────────────────────────────────────────────────────────────
 export function StudioPanel() {
+  const video = useRoom((st) => st.video)
+  const setVideo = useRoom((st) => st.setVideo)
   return (
     <div>
       <p className="lede">{studio.summary}</p>
-      <Section kicker="Episodes" title="On the channel">
-        {studio.episodes.map((e) => (
-          <div key={e.t} className="edu">
-            <b>{e.t}</b>
-            <span>
-              <T>{e.d}</T>
-            </span>
-          </div>
-        ))}
-      </Section>
       <Links links={studio.links} />
-      <p className="fine">The episode on the wall is drawn with the Canvas 2D API at 24 frames per second, the same way I build the real ones: keyframed scenes, eased motion, captions.</p>
+      <Section kicker="Now on the TV" title="Episodes">
+        <div className="eps">
+          {studio.videos.map((v) => (
+            <button key={v.id} className={`ep ${v.id === video ? 'on' : ''} ${v.kind}`} onClick={() => setVideo(v.id)}>
+              <img src={`https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`} alt="" loading="lazy" />
+              <span>
+                <em>{v.kind === 'short' ? 'Short' : 'Video'}</em>
+                {v.t}
+              </span>
+            </button>
+          ))}
+        </div>
+        <p className="fine">The player is the real YouTube embed, mounted onto the TV surface in 3D. Press play on the screen, or open it on YouTube.</p>
+      </Section>
     </div>
   )
 }
@@ -318,6 +342,42 @@ export function ViewPanel() {
 }
 
 // ── Basketball ───────────────────────────────────────────────────────────────
+function CourtVisionLive() {
+  const [, f] = useReducer((x) => x + 1, 0)
+  useEffect(() => {
+    const id = setInterval(f, 500)
+    return () => clearInterval(id)
+  }, [])
+  const tracks = cvTracks()
+  return (
+    <Section kicker="CourtVision · my basketball analyser" title="Live tracking">
+      <p>The camera above the backboard is a nod to CourtVision, my machine-learning match analyser: it tracks every player, recognises who they are and what they’re doing, then writes a post-game report per player and a plan against the next opponent. Here it tracks the robots and the ball in real time.</p>
+      <div className="cv-table">
+        <div className="cv-row head">
+          <span>ID</span>
+          <span>Player</span>
+          <span>Action</span>
+          <span>Dist</span>
+          <span>FG</span>
+        </div>
+        {tracks.map((t) => (
+          <div key={t.id} className="cv-row" style={{ ['--agent' as string]: t.color }}>
+            <span>#{t.id}</span>
+            <span>{t.name}</span>
+            <span>{t.action}</span>
+            <span>{t.dist.toFixed(1)} m</span>
+            <span>
+              {t.made}/{t.att}
+            </span>
+          </div>
+        ))}
+      </div>
+      <Links links={[{ label: 'Open CourtVision in the library', href: '#lib:courtvision' }]} />
+    </Section>
+  )
+}
+
+
 export function BasketballPanel() {
   const score = useRoom((s) => s.score)
   const shots = useRoom((s) => s.shots)
@@ -344,6 +404,7 @@ export function BasketballPanel() {
           {s}
         </p>
       ))}
+      <CourtVisionLive />
       <Section kicker="Off the court" title="What it taught me">
         <div className="lessons">
           {basketball.learned.map((l) => (

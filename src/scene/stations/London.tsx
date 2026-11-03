@@ -4,6 +4,7 @@ import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import { Hotspot } from '../Hotspot'
 import { canvasTexture, rng } from '../textures'
+import { surgeLevel } from './TeslaCoil'
 
 // window opening in the right wall (x = 7)
 export const WIN = { z0: -0.75, z1: 1.55, y0: 1.375, y1: 3.125 }
@@ -300,11 +301,19 @@ function nearCity() {
   })
 }
 
-function Layer({ tex, x, w, h, y }: { tex: THREE.Texture; x: number; w: number; h: number; y: number }) {
+function Layer({ tex, x, w, h, y, flash = false }: { tex: THREE.Texture; x: number; w: number; h: number; y: number; flash?: boolean }) {
+  const mat = useRef<THREE.MeshBasicMaterial>(null)
+  useFrame(() => {
+    if (!flash || !mat.current) return
+    // lightning over London when the coil fires
+    const s = surgeLevel()
+    const f = s > 0 && Math.random() < 0.25 ? 1 + s * 3 : 1
+    mat.current.color.setScalar(f)
+  })
   return (
     <mesh position={[x, y, 0.4]} rotation={[0, -Math.PI / 2, 0]}>
       <planeGeometry args={[w, h]} />
-      <meshBasicMaterial map={tex} transparent fog={false} toneMapped={false} depthWrite={false} />
+      <meshBasicMaterial ref={mat} map={tex} transparent fog={false} toneMapped={false} depthWrite={false} />
     </mesh>
   )
 }
@@ -326,7 +335,7 @@ function Outside() {
   })
   return (
     <group>
-      <Layer tex={t.sky} x={48} w={110} h={55} y={14} />
+      <Layer tex={t.sky} x={48} w={110} h={55} y={14} flash />
       <Layer tex={t.far} x={34} w={40} h={20} y={13} />
       <Layer tex={t.mid} x={22} w={24} h={12} y={9.2} />
       <Layer tex={t.near} x={11} w={24} h={12} y={4.5} />

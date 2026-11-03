@@ -142,9 +142,11 @@ export const items: Item[] = [
 
   // Builds
   { id: 'nightwatch', title: 'Night Watch', subtitle: 'An autonomous mini-SOC run by three agents', shelf: 'builds', kind: 'project', year: '2026', body: 'The robots in this room. Three agents defend the room’s own network in real time: Sentry watches the event stream, Analyst correlates detections into incidents mapped to MITRE ATT&CK, and Medic contains the threat. You can launch the attacks yourself.', tags: ['multi-agent', 'detection engineering', 'MITRE ATT&CK'], color: '#1f5f8b' },
+  { id: 'room', title: 'The Room', subtitle: 'This interactive 3D portfolio', shelf: 'builds', kind: 'project', year: '2026', body: 'The place you are standing in. A 3D room built from scratch in the browser with React Three Fiber and TypeScript, where every object is a project you can use: a live market desk, a page-flip paper reader, a qubit you can measure, a working mini-SOC with three agents, and a hoop with real ball physics.', points: ['11 stations; all geometry and textures generated in code, so there are no model downloads.', 'Live BTC/ETH over a Coinbase websocket, with indicators computed client-side.', 'Night Watch: sliding-window detection rules mapped to MITRE ATT&CK, incident correlation, A* navigation for the agents.'], tags: ['React Three Fiber', 'TypeScript', 'WebGL'], links: [{ label: 'Source on GitHub', href: 'https://github.com/Aliyousefi9403/3D-Room' }], color: '#8a6a2f' },
+  { id: 'courtvision', title: 'CourtVision', subtitle: 'Live basketball match analyser', shelf: 'builds', kind: 'project', year: '', body: 'A machine-learning system that watches a basketball game live: it tracks every player, recognises who each one is, and understands what they are doing on each possession. After the game it analyses every player individually, and the team they’re about to face, and turns that into a plan: how to play them and what to do.', points: ['Multi-person tracking with player re-identification across the whole game.', 'Action understanding per player, possession by possession.', 'Post-game reports per player, plus opponent scouting with tactical recommendations.'], tags: ['computer vision', 'tracking', 'machine learning', 'basketball'], links: [PRIVATE], color: '#c4571a' },
   { id: 'lease', title: 'Lease & Contract Analyser', subtitle: 'Retrieval-augmented legal analysis', shelf: 'builds', kind: 'project', year: '2026', body: 'A RAG pipeline that splits tenancy agreements into clauses and maps each one to the governing statute.', points: ['Flags non-standard, missing and unenforceable terms.', 'Reports accuracy against a hand-labelled test set.', 'Scoped in data-retention controls and a clear line between analysis and regulated legal advice.'], tags: ['RAG', 'embeddings', 'LLM APIs'], links: [PRIVATE], color: '#5a4a3a' },
   { id: 'aris', title: 'Aris', subtitle: 'Voice & gesture controlled system supervisor', shelf: 'builds', kind: 'project', year: '2026', body: 'A local assistant with a FastAPI WebSocket backend, a SQLite indexer over 12 git repos, and a voice and gesture UI built on MediaPipe.', points: ['Tool layer restricted by a repository allowlist and command blocklist, so every action stays inside the sandbox.', 'OAuth 2.0 with rotating refresh tokens. Traced a 403 to header filtering and a TLS failure to a missing trust store.'], tags: ['FastAPI', 'WebSockets', 'MediaPipe', 'OAuth 2.0'], links: [PRIVATE], color: '#2b4f6b' },
-  { id: 'studio', title: 'Security, Animated', subtitle: '2D explainer videos for YouTube', shelf: 'builds', kind: 'project', year: '✎', body: 'I code 2D animations that explain cybersecurity concepts for YouTube. There’s one playing on the studio screen in this room, drawn live in your browser.', tags: ['animation', 'education', 'YouTube'], links: [{ label: 'YouTube channel', href: '✎ https://youtube.com/@your-channel' }], color: '#b5372f' },
+  { id: 'studio', title: 'BreachLab', subtitle: 'Animated cybersecurity explainers on YouTube', shelf: 'builds', kind: 'project', year: '2026', body: 'I write, code and animate BreachLab: 2D explainers that turn real attacks into short stories, from a £1,500 parking-QR scam to a $25 million deepfake video call, and show how to stop them. The Studio TV in this room plays the real episodes.', points: ['Long-form explainers: QR-code phishing, and four ways attackers get past 2FA.', 'Shorts on real incidents, hosted by a duck who has never been caught.', 'Every frame animated in code.'], tags: ['animation', 'security education', 'YouTube'], links: [{ label: 'Watch on YouTube', href: 'https://www.youtube.com/@Breachlab101' }], color: '#b5372f' },
   { id: 'pharmacy', title: 'Pharmacy Ordering System', subtitle: 'Team project · Project Manager', shelf: 'builds', kind: 'project', year: '2026', body: 'Led requirements, design and sprint planning as Project Manager, and co-wrote the C# front end and JWT-secured REST API.', tags: ['C#', 'REST', 'MySQL', 'JWT'], color: '#2d5a50' },
   { id: 'farazjam', title: 'farazjam.com', subtitle: 'Freelance web development', shelf: 'builds', kind: 'experience', year: '2022–25', body: 'Delivered two business websites from brief to launch as sole point of contact. Alongside it, closed four international B2B deals across Italy, Germany, China and the Middle East for Kaveh Float, negotiating in a second language.', tags: ['web', 'sales'], links: [{ label: 'farazjam.com', href: 'https://farazjam.com' }], color: '#6b5a2a' },
 
@@ -154,6 +156,8 @@ export const items: Item[] = [
 
   // Curiosities & ideas
   { id: 'quantum', title: 'Quantum Physics', subtitle: 'A long-running obsession', shelf: 'curious', kind: 'achievement', year: '∞', body: 'Superposition, measurement and the strange fact that the universe keeps its options open until you look. There’s a qubit on the side table you can measure yourself.', tags: ['Bloch sphere', 'measurement'], color: '#3a3f8a' },
+  { id: 'tesla', title: 'Nikola Tesla', subtitle: 'My favourite character of all time', shelf: 'curious', kind: 'achievement', year: '1856–1943', body: 'Reading the life of Nikola Tesla is one of my favourite things I’ve ever done. Alternating current, the induction motor, wireless power, hundreds of patents, and a mind that built machines in his head before he built them in metal. He’s my favourite character of all time. Click the coil in the Quantum Corner.', tags: ['Tesla', 'invention'], links: [{ label: 'My Inventions (1919)', href: 'https://en.wikipedia.org/wiki/My_Inventions:_The_Autobiography_of_Nikola_Tesla' }, { label: 'His writings, free', href: 'https://www.gutenberg.org/ebooks/39272' }], color: '#2a4a6a' },
+  { id: 'reading', title: 'How I Got Into Quantum', subtitle: 'The books and papers that did it', shelf: 'curious', kind: 'achievement', year: '', body: 'I got into quantum physics by reading. Feynman’s QED made light strange, Hawking’s A Brief History of Time made the universe feel small enough to think about, and Rovelli’s Helgoland made the measurement problem impossible to stop thinking about. Then the originals: the 1935 EPR paper and Bell’s 1964 reply.', points: ['Richard Feynman, QED: The Strange Theory of Light and Matter', 'Stephen Hawking, A Brief History of Time', 'Carlo Rovelli, Helgoland', 'Einstein, Podolsky & Rosen (1935), Can Quantum-Mechanical Description of Physical Reality Be Considered Complete?', 'John S. Bell (1964), On the Einstein Podolsky Rosen Paradox'], tags: ['quantum', 'reading'], links: [{ label: 'The EPR paper', href: 'https://journals.aps.org/pr/abstract/10.1103/PhysRev.47.777' }], color: '#4a3a8a' },
   { id: 'ukmt', title: 'UKMT Senior Challenge', subtitle: 'Silver · Senior Kangaroo Certificate of Merit', shelf: 'curious', kind: 'achievement', year: '2022', body: 'UK Mathematics Trust Senior Mathematical Challenge Silver award and Senior Kangaroo Certificate of Merit.', tags: ['mathematics'], color: '#7a5a1f' },
   { id: 'idea-memory', title: 'Poisoning Agent Memory', subtitle: 'Next paper idea', shelf: 'curious', kind: 'idea', year: '', body: 'Long-term memory in LLM agents is a corpus the attacker can write to. How long does one poisoned memory persist, and how far does it spread?', tags: ['agents', 'memory'], color: '#3a2a2e' },
   { id: 'idea-xling', title: 'Cross-Lingual Poisoning', subtitle: 'Next paper idea', shelf: 'curious', kind: 'idea', year: '', body: 'Do poisoned passages written in Persian or Turkish hijack answers to English questions? Multilingual embedders make it likely, and it’s under-studied.', tags: ['multilingual', 'RAG'], color: '#3a2a2e' },
@@ -261,7 +265,12 @@ export const internship = {
     'Built a Bitcoin model from technical indicators.',
     'Give the founders structured feedback as an early engineering user, which earned me full access to the model and data layer.',
   ],
-  learned: ['✎ What working on a self-adapting system taught you about machine learning.'],
+  learned: [
+    'Markets change regime, so a model that can’t adapt quietly decays. Adaptation has to be designed in, not bolted on.',
+    'Live scoring is the only honest test. A backtest is a hypothesis.',
+    'Most of the work is the data layer: clean ingestion and well-defined features matter more than a cleverer model.',
+    'Feedback is a skill too: being a precise early user earned me full access to the platform.',
+  ],
 }
 
 export const basketball = {
@@ -290,18 +299,31 @@ export const quantum = {
   title: 'Quantum Physics',
   summary:
     'I love quantum physics. A qubit is the simplest object that shows how strange it all is: until it’s measured it’s a point on a sphere, a weighted mix of 0 and 1, and measuring it forces a single answer with probabilities set by where it sat.',
-  note: '✎ A line or two in your own words: what got you into quantum physics, and what you’re reading or wondering about now.',
+  note: 'I got into it by reading: Feynman’s QED, Hawking’s A Brief History of Time, Rovelli’s Helgoland, then the EPR paper and Bell’s theorem. And Nikola Tesla, my favourite character of all time, is the reason there’s a coil in this corner.',
+  reading: [
+    { t: 'QED: The Strange Theory of Light and Matter', a: 'Richard Feynman' },
+    { t: 'A Brief History of Time', a: 'Stephen Hawking' },
+    { t: 'Helgoland', a: 'Carlo Rovelli' },
+    { t: 'Can Quantum-Mechanical Description of Physical Reality Be Considered Complete?', a: 'Einstein, Podolsky & Rosen · 1935' },
+    { t: 'On the Einstein Podolsky Rosen Paradox', a: 'John S. Bell · 1964' },
+    { t: 'My Inventions', a: 'Nikola Tesla · 1919' },
+  ],
 }
 
 export const studio = {
-  title: 'Security, Animated',
+  title: 'BreachLab',
   summary:
-    'I code 2D animated explainers that teach cybersecurity concepts for YouTube. The screen in this corner is one of them, rendered frame by frame in your browser: a phishing email, the click, and what actually happens next.',
-  episodes: [
-    { t: 'Phishing, step by step', d: 'From the lure to the stolen session, and the one habit that stops it.' },
-    { t: 'What is a SQL injection?', d: '✎ Add your real video titles here' },
+    'BreachLab is my YouTube channel: 2D animated explainers I code myself, turning real attacks into short stories and showing how to stop them. The TV plays the real videos. Pick one below.',
+  channel: 'https://www.youtube.com/@Breachlab101',
+  videos: [
+    { id: 'i7XOZuSWM0Q', t: '4 Ways Hackers Get Past 2FA (And How to Stop Them)', kind: 'video' },
+    { id: 'CUodFDzJVd0', t: 'The QR Code Hack: How One Parking Scan Took £1,500', kind: 'video' },
+    { id: '25FPeWUbwWc', t: 'One Video Call. $25 Million Gone. Every Face Was Fake.', kind: 'short' },
+    { id: '0H0LxAAP-cg', t: 'He Hacked Uber By Being Annoying', kind: 'short' },
+    { id: '46d-ak23a4Y', t: 'One Parking QR Scan Cost Her £1,500', kind: 'short' },
+    { id: 'jYc8hYX24F8', t: 'He’s never been caught. Now he has to teach you.', kind: 'short' },
   ],
-  links: [{ label: 'YouTube channel', href: '✎ https://youtube.com/@your-channel' }] as Link[],
+  links: [{ label: 'Subscribe on YouTube', href: 'https://www.youtube.com/@Breachlab101' }] as Link[],
 }
 
 export const view = {

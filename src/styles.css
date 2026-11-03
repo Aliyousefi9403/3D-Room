@@ -456,3 +456,22 @@ code { font-family: var(--mono); font-size: 0.92em; color: var(--blue); }
 .cv-preview { display: block; margin-top: 12px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line-2); max-height: 260px; position: relative; }
 .cv-preview img { width: 100%; display: block; }
 .cv-preview::after { content: 'Open full CV ↗'; position: absolute; inset: auto 0 0 0; padding: 40px 16px 14px; background: linear-gradient(transparent, rgba(5, 6, 10, 0.95)); font-size: 13px; color: var(--brass); }
+.eps { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ep { display: grid; gap: 6px; text-align: left; padding: 6px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.02); transition: all 0.2s var(--ease); }
+.ep img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; display: block; }
+.ep span { font-size: 12px; line-height: 1.35; padding: 0 4px 4px; }
+.ep em { display: block; font-style: normal; font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; color: #ff6b6b; margin-bottom: 2px; }
+.ep:hover { border-color: var(--line-2); }
+.ep.on { border-color: #ff4040; box-shadow: 0 0 0 1px #ff4040; }
+.tv-html { pointer-events: auto; }
+.reading { display: grid; gap: 1px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--line); }
+.reading > div { display: grid; gap: 2px; padding: 11px 14px; background: rgba(8, 10, 15, 0.85); }
+.reading b { font-family: var(--serif); font-weight: 400; font-size: 15px; }
+.reading span { font-size: 12px; color: var(--ink-3); }
+.cv-table { font-family: var(--mono); font-size: 12px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-top: 12px; }
+.cv-row { display: grid; grid-template-columns: 40px 1fr 1.4fr 60px 46px; gap: 8px; padding: 9px 12px; border-top: 1px solid var(--line); align-items: center; }
+.cv-row.head { border-top: 0; color: var(--ink-3); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+.cv-row:not(.head) span:first-child { color: var(--agent); }
+.cv-box { position: relative; border: 1.5px solid var(--agent); border-radius: 4px; pointer-events: none; }
+.cv-box span { position: absolute; left: -1.5px; top: -18px; font-family: var(--mono); font-size: 10px; background: var(--agent); color: #05060a; padding: 1px 5px; border-radius: 3px 3px 3px 0; white-space: nowrap; }
+@media (max-width: 820px) { .eps { grid-template-columns: 1fr; } .cv-row { grid-template-columns: 34px 1fr 1fr 52px 40px; font-size: 11px; } }
