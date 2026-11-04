@@ -195,6 +195,17 @@ function Ball() {
     return () => void off()
   }, [shot])
 
+  const size = useThree((s) => s.size)
+  const [ready, setReady] = useState(false)
+  /** Hold the ball beside the panel on desktop, above the bottom sheet on phones. */
+  const placeHand = () => {
+    const narrow = size.width < 820
+    const v = new THREE.Vector3(narrow ? 0 : -0.32, narrow ? 0.12 : -0.28, 0.5).unproject(camera)
+    const dir = v.sub(camera.position).normalize()
+    hand.copy(camera.position).addScaledVector(dir, 1.5)
+    hand.y = Math.max(hand.y, 0.9)
+  }
+
   const launchVel = (dx: number, dy: number) => {
     // pull back (drag down) for power, sideways to aim
     const ideal = solveShot(hand, RIM.clone().add(new THREE.Vector3(0, 0.02, 0.04)), 0.75 + Math.hypot(RIM.x - hand.x, RIM.z - hand.z) * 0.16)
@@ -208,6 +219,15 @@ function Ball() {
 
   useEffect(() => {
     const el = gl.domElement
+    const down = (e: PointerEvent) => {
+      if (useRoom.getState().station !== 'basketball' || drag.current) return
+      if (['sentry', 'analyst', 'medic'].includes(ball.holder) || ball.inFlight) return
+      homing.current = 0
+      ball.holder = 'user'
+      drag.current = { x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY }
+      setDragging(true)
+      document.body.style.cursor = 'grabbing'
+    }
     const move = (e: PointerEvent) => {
       if (!drag.current) return
       drag.current.x = e.clientX
@@ -218,17 +238,22 @@ function Ball() {
       if (!d) return
       drag.current = null
       setDragging(false)
+      document.body.style.cursor = ''
       const dy = d.y - d.y0
       const dx = d.x - d.x0
       if (dy < 12) return
       shoot('user', launchVel(dx, dy), hand.clone())
       setTimeout(() => useRoom.getState().shot(false, true), 50)
     }
-    el.addEventListener('pointermove', move)
+    el.addEventListener('pointerdown', down)
+    window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up)
+    window.addEventListener('pointercancel', up)
     return () => {
-      el.removeEventListener('pointermove', move)
+      el.removeEventListener('pointerdown', down)
+      window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', up)
     }
   })
 
@@ -245,12 +270,7 @@ function Ball() {
     }
     if (homing.current > 0) {
       const target = station === 'basketball' ? hand : new THREE.Vector3(5.95, 0.95, -3)
-      if (station === 'basketball') {
-        const dir = new THREE.Vector3()
-        camera.getWorldDirection(dir)
-        hand.copy(camera.position).addScaledVector(dir, 1.6)
-        hand.y = Math.max(hand.y - 0.45, 0.9)
-      }
+      if (station === 'basketball') placeHand()
       ball.pos.lerp(target, Math.min(1, dt * 3.5))
       ball.pos.y += Math.sin(Math.min(1, homing.current) * Math.PI) * 0.02
       ball.vel.set(0, 0, 0)
@@ -260,17 +280,16 @@ function Ball() {
       }
     }
     if (ball.holder === 'user') {
-      // hold the ball in front of the camera, offset toward the hoop
-      const dir = new THREE.Vector3()
-      camera.getWorldDirection(dir)
-      hand.copy(camera.position).addScaledVector(dir, 1.6)
-      hand.y = Math.max(hand.y - 0.45, 0.9)
+      // hold the ball in the open part of the view; pulling back lowers it
+      placeHand()
       const d = drag.current
-      if (d) hand.y -= Math.min(0.25, (d.y - d.y0) / 900)
+      if (d) hand.y -= Math.min(0.25, Math.max(0, d.y - d.y0) / 900)
       ball.pos.copy(hand)
       ball.vel.set(0, 0, 0)
     }
     m.position.copy(ball.pos)
+    const r = interactive && ball.holder === 'user' && !drag.current
+    if (r !== ready) setReady(r)
     const sp = ball.vel.length()
     if (sp > 0.02) m.rotateOnWorldAxis(new THREE.Vector3(ball.vel.z, 0, -ball.vel.x).normalize(), (sp * dt) / BALL_R)
     // trajectory preview
@@ -314,6 +333,11 @@ function Ball() {
         <sphereGeometry args={[BALL_R, 48, 32]} />
         <meshStandardMaterial map={tex} roughness={0.75} emissive="#ff7a2e" emissiveIntensity={interactive && hover ? 0.4 : 0} />
       </mesh>
+      {ready && (
+        <Html position={[ball.pos.x, ball.pos.y - 0.2, ball.pos.z]} center zIndexRange={[12, 0]} style={{ pointerEvents: 'none' }}>
+          <div className="shoot-hint">Press anywhere, pull down, release</div>
+        </Html>
+      )}
       <instancedMesh ref={dots} args={[undefined, undefined, 24]} visible={false}>
         <sphereGeometry args={[0.022, 8, 8]} />
         <meshBasicMaterial color={[3, 2, 1]} toneMapped={false} transparent opacity={0.8} />

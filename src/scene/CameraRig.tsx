@@ -63,6 +63,15 @@ export function CameraRig() {
     }
   }, [station, size.width, size.height, openPanel, camera])
 
+  // on the court a drag means a shot, so the camera ignores left-drag / one-finger input there
+  useEffect(() => {
+    const c = ref.current
+    if (!c) return
+    const A = (c.constructor as unknown as { ACTION: Record<string, number> }).ACTION
+    c.mouseButtons.left = (station === 'basketball' ? A.NONE : A.ROTATE) as never
+    c.touches.one = (station === 'basketball' ? A.NONE : A.TOUCH_ROTATE) as never
+  }, [station])
+
   const overview = station === 'overview'
   const v = views[station]
   const az = Math.atan2(v.pos[0] - v.target[0], v.pos[2] - v.target[2])

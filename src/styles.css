@@ -554,3 +554,6 @@ html:has(.flat), html:has(.flat) body, html:has(.flat) #root { overflow: auto; h
 .flat .eps { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 .flat .ep { text-decoration: none; }
 @media (max-width: 720px) { .flat-two { grid-template-columns: 1fr; } .flat-top nav a:not(.btn) { display: none; } }
+
+.shoot-hint { white-space: nowrap; font-size: 12px; padding: 6px 12px; border-radius: 99px; background: rgba(10, 12, 18, 0.8); border: 1px solid rgba(255, 140, 60, 0.6); color: #ffc79a; animation: pop 0.4s var(--ease), bob 1.6s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(5px); } }

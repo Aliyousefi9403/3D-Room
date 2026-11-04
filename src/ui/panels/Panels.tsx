@@ -402,7 +402,7 @@ export function BasketballPanel() {
           <b>{shots ? Math.round((score / shots) * 100) : 0}%</b>
           <span>FG</span>
         </div>
-        <p>Press on the ball, pull back, release. Pull further for more power, sideways to aim.</p>
+        <p>Press anywhere in the room, pull down and release. Pull further for more power, sideways to aim.</p>
       </div>
       <KV items={basketball.facts} />
       {basketball.story.map((s, i) => (
