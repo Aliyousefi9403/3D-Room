@@ -114,7 +114,7 @@ export function Experience() {
     >
       <color attach="background" args={['#05060a']} />
       <fog attach="fog" args={['#05060a', 16, 34]} />
-      <PerformanceMonitor onDecline={() => !useRoom.getState().lite && setLite(true)} flipflops={2} />
+      {!location.search.includes('video') && <PerformanceMonitor onDecline={() => !useRoom.getState().lite && setLite(true)} flipflops={2} />}
       <Suspense fallback={null}>
         <Environment resolution={256} frames={1}>
           <Lightformer intensity={1.2} color="#ffd2a1" position={[0, 5, -9]} scale={[10, 3, 1]} />

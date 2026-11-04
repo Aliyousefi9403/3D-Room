@@ -393,7 +393,7 @@ export function NightWatch() {
   const station = useRoom((s) => s.station)
   useEffect(() => {
     pingLog()
-    if (location.search.includes('debug')) Object.assign(window, { __sim: { bots, net: devices, ball, crew } })
+    if (location.search.includes('debug')) Object.assign(window, { __sim: { bots, net: devices, ball, crew, shoot, aimedShot: (p: THREE.Vector3, k: number) => solveShot(p, RIM.clone().add(new THREE.Vector3(0, 0.02, 0.04)), 0.75 + Math.hypot(RIM.x - p.x, RIM.z - p.z) * 0.16 * k), THREE } })
   }, [])
   useEffect(() => {
     crew.userAtCourt = station === 'basketball'
