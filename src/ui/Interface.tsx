@@ -8,6 +8,7 @@ import { RagPanel } from './panels/RagPanel'
 import { RvPanel, QuantPanel, SwarmPanel, BasketballPanel, QuantumPanel, StudioPanel, ViewPanel } from './panels/Panels'
 import { Reader } from './Reader'
 import { HighlightsTour } from './Tour'
+import { music } from '../audio/ambient'
 import { CrewPanel } from './panels/CrewPanel'
 import { ragLab, rv, quantDesk, internship, basketball, quantum, studio, view } from '../content'
 import { T } from './bits'
@@ -106,6 +107,34 @@ function ListView() {
   )
 }
 
+function MusicToggle() {
+  const on = useRoom((s) => s.music)
+  const setMusic = useRoom((s) => s.setMusic)
+  const surge = useRoom((s) => s.surge)
+  useEffect(() => {
+    if (surge > 0) music.surge()
+  }, [surge])
+  return (
+    <button
+      className={`music ${on ? 'on' : ''}`}
+      onClick={() => {
+        setMusic(!on)
+        if (on) music.stop()
+        else music.start()
+      }}
+      title={on ? 'Mute the music' : 'Play the music'}
+      aria-label={on ? 'Mute the music' : 'Play the music'}
+    >
+      <span className="eq" aria-hidden>
+        <i />
+        <i />
+        <i />
+      </span>
+      {on ? 'Music' : 'Muted'}
+    </button>
+  )
+}
+
 function QualityToggle() {
   const lite = useRoom((s) => s.lite)
   const setLite = useRoom((s) => s.setLite)
@@ -146,7 +175,15 @@ function Loader() {
         <div className="loader-bar">
           <i style={{ width: `${canEnter ? 100 : Math.max(8, progress)}%` }} />
         </div>
-        <button className="btn btn-primary btn-lg" disabled={!canEnter} onClick={() => setEntered(true)}>
+        <button
+          className="btn btn-primary btn-lg"
+          disabled={!canEnter}
+          onClick={() => {
+            setEntered(true)
+            // browsers only allow sound after a click, so the music starts here
+            if (useRoom.getState().music && !location.search.includes('video')) music.start()
+          }}
+        >
           {canEnter ? 'Enter the room' : 'Setting the lights…'}
         </button>
         <div className="loader-hint">Drag to look around · click anything that glows · Esc to step back</div>
@@ -239,6 +276,7 @@ export function Interface() {
         </button>
       </header>
       <div className="corner">
+        <MusicToggle />
         <QualityToggle />
         <button onClick={() => useRoom.getState().setList(true)}>List view</button>
         <a href={`mailto:${profile.email}`}>Contact</a>

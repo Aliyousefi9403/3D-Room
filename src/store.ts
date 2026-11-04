@@ -28,6 +28,8 @@ type State = {
   shot: (made: boolean, attempt?: boolean) => void
   dragging: boolean
   video: string
+  music: boolean
+  setMusic: (v: boolean) => void
   setVideo: (id: string) => void
   surge: number
   fire: () => void
@@ -89,6 +91,21 @@ export const useRoom = create<State>((set) => ({
   shot: (made, attempt) => set((s) => ({ shots: s.shots + (attempt ? 1 : 0), score: s.score + (made ? 1 : 0) })),
   dragging: false,
   video: 'i7XOZuSWM0Q',
+  music: (() => {
+    try {
+      return localStorage.getItem('room-music') !== 'off'
+    } catch {
+      return true
+    }
+  })(),
+  setMusic: (music) => {
+    try {
+      localStorage.setItem('room-music', music ? 'on' : 'off')
+    } catch {
+      /* storage unavailable */
+    }
+    set({ music })
+  },
   setVideo: (video) => set({ video }),
   surge: -100,
   fire: () => set({ surge: performance.now() / 1000 }),
