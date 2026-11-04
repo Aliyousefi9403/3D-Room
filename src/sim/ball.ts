@@ -31,7 +31,10 @@ export const onScore = (fn: ScoreFn) => (scored.add(fn), () => scored.delete(fn)
 
 /** Initial velocity that lands the ball at `target` after `t` seconds. */
 export function solveShot(from: THREE.Vector3, target: THREE.Vector3, t: number) {
-  return new THREE.Vector3((target.x - from.x) / t, (target.y - from.y + 0.5 * G * t * t) / t, (target.z - from.z) / t)
+  // exact launch velocity under the integrator's linear drag (k = 0.08 /s) and gravity
+  const k = 0.08
+  const f = k / (1 - Math.exp(-k * t))
+  return new THREE.Vector3((target.x - from.x) * f, (target.y - from.y + (G * t) / k) * f - G / k, (target.z - from.z) * f)
 }
 
 /** A shot at the rim with some error; `skill` 0..1 shrinks the error. */
