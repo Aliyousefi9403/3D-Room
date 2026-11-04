@@ -49,7 +49,7 @@ export function HighlightsTour() {
 
   // auto-advance unless the visitor is busy
   useEffect(() => {
-    if (!tour || paused || i >= HIGHLIGHTS.length - 1) return
+    if (!tour || paused || i >= HIGHLIGHTS.length - 1 || location.search.includes('video')) return
     const t = setTimeout(() => setI((x) => x + 1), STEP_MS)
     return () => clearTimeout(t)
   }, [tour, i, paused])
