@@ -3,8 +3,10 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import { Hotspot } from '../Hotspot'
+import { PL } from '../Light'
 import { Spot } from '../Spot'
-import { feeds, startMarket, read, Feed } from '../../market'
+import { every } from '../Light'
+import { feeds, startMarket, read, Feed, isLive, ago } from '../../market'
 
 const W = 768
 const H = 448
@@ -12,7 +14,7 @@ const C = { bg: '#060a11', grid: 'rgba(120,160,220,0.07)', ink: '#e8eefb', dim: 
 const fmt = (v: number, d = 2) => v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d })
 
 function badge(c: CanvasRenderingContext2D, f: Feed, t: number, x: number, y: number) {
-  const live = f.status === 'live'
+  const live = isLive(f)
   const col = live ? C.dn : f.status === 'simulated' ? C.gold : C.blue
   c.globalAlpha = live ? 0.55 + 0.45 * Math.sin(t * 5) : 1
   c.fillStyle = col
@@ -21,10 +23,11 @@ function badge(c: CanvasRenderingContext2D, f: Feed, t: number, x: number, y: nu
   c.fill()
   c.globalAlpha = 1
   c.font = '600 15px JetBrains Mono, monospace'
-  c.fillText(live ? 'LIVE' : f.status === 'simulated' ? 'SIM' : f.status === 'delayed' ? 'DELAYED' : '…', x + 12, y)
+  c.fillText(live ? 'LIVE' : f.status === 'simulated' ? 'SIM' : 'STALE', x + 12, y)
   c.fillStyle = C.dim
   c.font = '400 12px JetBrains Mono, monospace'
-  c.fillText(f.source, x + 12, y + 16)
+  const a = ago(f)
+  c.fillText(a === null ? f.source : f.source + ' · ' + a + 's ago', x + 12, y + 16)
 }
 
 function grid(c: CanvasRenderingContext2D) {
@@ -93,7 +96,7 @@ function drawChart(c: CanvasRenderingContext2D, f: Feed, t: number) {
   c.fillRect(W - 84, Y(last) - 12, 80, 24)
   c.fillStyle = '#0a0c12'
   c.font = '600 14px JetBrains Mono, monospace'
-  c.fillText(fmt(last, 0), W - 78, Y(last) + 5)
+  c.fillText('$' + fmt(last, 0), W - 80, Y(last) + 5)
   // header
   c.fillStyle = C.ink
   c.font = '600 26px JetBrains Mono, monospace'
@@ -127,7 +130,7 @@ function drawTape(c: CanvasRenderingContext2D, btc: Feed, eth: Feed) {
     c.fillStyle = C.dim
     c.fillText(new Date(tr.t).toTimeString().slice(0, 8), 22, y)
     c.fillStyle = tr.side === 'buy' ? C.up : C.dn
-    c.fillText(fmt(tr.price), 130, y)
+    c.fillText('$' + fmt(tr.price), 124, y)
     c.fillStyle = C.ink
     c.fillText(tr.size.toFixed(5), 270, y)
     c.fillStyle = tr.side === 'buy' ? C.up : C.dn
@@ -144,7 +147,7 @@ function drawTape(c: CanvasRenderingContext2D, btc: Feed, eth: Feed) {
   c.stroke()
   c.fillStyle = C.ink
   c.font = '600 16px JetBrains Mono, monospace'
-  c.fillText(`ETH-USD  ${eth.last ? fmt(eth.last) : '…'}`, 22, y0 + 14)
+  c.fillText(`ETH-USD  ${eth.last ? '$' + fmt(eth.last) : '…'}`, 22, y0 + 14)
   if (e.length > 2) {
     const lo = Math.min(...e)
     const hi = Math.max(...e)
@@ -270,7 +273,7 @@ export function TradingDesk() {
   const acc = useRef(0)
   useFrame(({ clock }, dt) => {
     acc.current += dt
-    if (acc.current < 0.15) return
+    if (acc.current < every(0.15)) return
     acc.current = 0
     const btc = feeds['BTC-USD']
     drawTape(screens[0].ctx, btc, feeds['ETH-USD'])
@@ -327,7 +330,7 @@ export function TradingDesk() {
             </mesh>
           ))}
         </group>
-        <pointLight position={[0, 1.2, 0.6]} color="#7aa6ff" intensity={3} distance={3.5} />
+        <PL position={[0, 1.2, 0.6]} color="#7aa6ff" intensity={3} distance={3.5} />
         <Spot position={[0, 3.9, 1.6]} target={[0, 0.8, 0]} angle={0.55} penumbra={0.8} intensity={14} distance={6} color="#cfe0ff" />
       </group>
     </Hotspot>

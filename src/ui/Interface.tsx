@@ -7,6 +7,7 @@ import { AboutPanel } from './panels/AboutPanel'
 import { RagPanel } from './panels/RagPanel'
 import { RvPanel, QuantPanel, SwarmPanel, BasketballPanel, QuantumPanel, StudioPanel, ViewPanel } from './panels/Panels'
 import { Reader } from './Reader'
+import { HighlightsTour } from './Tour'
 import { CrewPanel } from './panels/CrewPanel'
 import { ragLab, rv, quantDesk, internship, basketball, quantum, studio, view } from '../content'
 import { T } from './bits'
@@ -26,7 +27,6 @@ const PANELS = {
 } as const
 
 
-const TOUR_MS = 11000
 
 function Hero() {
   const station = useRoom((s) => s.station)
@@ -46,12 +46,15 @@ function Hero() {
           <span>I break AI systems, then build the monitors that catch it.</span>
         </h1>
         <div className="hero-cta">
-          <button className="btn btn-primary btn-lg" onClick={() => (setTour(true), go(stations[0].id))}>
-            Start the tour
+          <button className="btn btn-primary btn-lg" onClick={() => setTour(true)}>
+            ▶ 45-second highlights
           </button>
           <button className="btn btn-lg" onClick={() => setList(true)}>
             List view
           </button>
+          <a className="btn btn-lg btn-ghost" href={profile.cvUrl} download>
+            CV ↓
+          </a>
         </div>
         <p className="hero-hint">Drag to look around. Click anything with a light on it. ← → to move between stations.</p>
       </section>
@@ -66,37 +69,6 @@ function Hero() {
         </span>
       </div>
     </>
-  )
-}
-
-function Tour() {
-  const tour = useRoom((s) => s.tour)
-  const station = useRoom((s) => s.station)
-  const panel = useRoom((s) => s.panel)
-  const go = useRoom((s) => s.go)
-  const setTour = useRoom((s) => s.setTour)
-  useEffect(() => {
-    if (!tour || !panel) return
-    const ids = stations.map((s) => s.id)
-    const i = ids.indexOf(station as (typeof ids)[number])
-    const t = setTimeout(() => {
-      if (i === ids.length - 1) {
-        setTour(false)
-        go('overview')
-      } else go(ids[i + 1])
-    }, TOUR_MS)
-    return () => clearTimeout(t)
-  }, [tour, station, panel, go, setTour])
-  if (!tour || station === 'overview') return null
-  const i = stations.findIndex((s) => s.id === station)
-  return (
-    <div className="tour">
-      <span>
-        Tour · {i + 1} / {stations.length}
-      </span>
-      <div className="tour-bar">{panel && <i key={station} style={{ animationDuration: `${TOUR_MS}ms` }} />}</div>
-      <button onClick={() => setTour(false)}>Stop</button>
-    </div>
   )
 }
 
@@ -134,6 +106,17 @@ function ListView() {
   )
 }
 
+function QualityToggle() {
+  const lite = useRoom((s) => s.lite)
+  const setLite = useRoom((s) => s.setLite)
+  return (
+    <button className="quality" onClick={() => setLite(!lite)} title="Switch rendering quality">
+      <i className={lite ? '' : 'on'} />
+      {lite ? 'Low' : 'High'}
+    </button>
+  )
+}
+
 function Loader() {
   const { progress, active } = useProgress()
   const [gone, setGone] = useState(false)
@@ -167,6 +150,9 @@ function Loader() {
           {canEnter ? 'Enter the room' : 'Setting the lights…'}
         </button>
         <div className="loader-hint">Drag to look around · click anything that glows · Esc to step back</div>
+        <a className="loader-flat" href="?2d">
+          View without 3D →
+        </a>
       </div>
     </div>
   )
@@ -253,13 +239,14 @@ export function Interface() {
         </button>
       </header>
       <div className="corner">
+        <QualityToggle />
         <button onClick={() => useRoom.getState().setList(true)}>List view</button>
         <a href={`mailto:${profile.email}`}>Contact</a>
         <button onClick={() => go('about')}>CV</button>
       </div>
       <Hero />
       <Panel />
-      <Tour />
+      <HighlightsTour />
       <Dock />
       <ListView />
       <Reader />

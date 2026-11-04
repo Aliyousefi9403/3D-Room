@@ -34,6 +34,23 @@ type State = {
   setDragging: (v: boolean) => void
 }
 
+/** Start on the low-power tier for phones, tablets and modest laptops; ?lite / ?hq force it. */
+function detectLite() {
+  if (typeof window === 'undefined') return false
+  const q = new URLSearchParams(location.search)
+  if (q.has('lite')) return true
+  if (q.has('hq')) return false
+  try {
+    const saved = localStorage.getItem('room-quality')
+    if (saved) return saved === 'low'
+  } catch {
+    /* storage unavailable */
+  }
+  const nav = navigator as Navigator & { deviceMemory?: number }
+  const mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(nav.userAgent) || (nav.maxTouchPoints > 1 && window.innerWidth < 1100)
+  return mobile || (nav.hardwareConcurrency ?? 8) <= 4 || (nav.deviceMemory ?? 8) <= 4
+}
+
 export const useRoom = create<State>((set) => ({
   station: 'overview',
   panel: false,
@@ -45,11 +62,18 @@ export const useRoom = create<State>((set) => ({
   hovered: null,
   score: 0,
   shots: 0,
-  lite: typeof location !== 'undefined' && new URLSearchParams(location.search).has('lite'),
+  lite: detectLite(),
   visited: [],
   tour: false,
   list: false,
-  setLite: (lite) => set({ lite }),
+  setLite: (lite) => {
+    try {
+      localStorage.setItem('room-quality', lite ? 'low' : 'high')
+    } catch {
+      /* storage unavailable */
+    }
+    set({ lite })
+  },
   setTour: (tour) => set({ tour }),
   setList: (list) => set({ list }),
   go: (station) =>

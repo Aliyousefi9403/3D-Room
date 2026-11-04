@@ -4,7 +4,9 @@ import { useFrame } from '@react-three/fiber'
 import { RoundedBox, Html } from '@react-three/drei'
 import { useRoom } from '../../store'
 import { studio } from '../../content'
+import { every } from '../Light'
 import { Hotspot } from '../Hotspot'
+import { PL } from '../Light'
 
 const W = 960
 const H = 540
@@ -338,7 +340,7 @@ export function Studio() {
   const ring = useRef<THREE.MeshBasicMaterial>(null)
   useFrame(({ clock }, dt) => {
     acc.current += dt
-    if (acc.current < 1 / 20) return
+    if (acc.current < every(1 / 20)) return
     acc.current = 0
     // no thumbnail (offline)? fall back to the animated explainer
     if (img.current) drawThumb(ctx, img.current, v.t, v.kind === 'short', clock.elapsedTime)
@@ -373,7 +375,7 @@ export function Studio() {
             />
           </Html>
         )}
-        <pointLight position={[0, 2.0, 0.8]} color="#7f9cff" intensity={2} distance={3} />
+        <PL position={[0, 2.0, 0.8]} color="#7f9cff" intensity={2} distance={3} />
         {/* ring light on a stand */}
         <group position={[1.35, 0, 0.9]}>
           <mesh position={[0, 0.8, 0]} castShadow>
@@ -384,7 +386,7 @@ export function Studio() {
             <torusGeometry args={[0.2, 0.025, 12, 48]} />
             <meshBasicMaterial ref={ring} color={[3.2, 3, 2.8]} toneMapped={false} />
           </mesh>
-          <pointLight position={[0, 1.7, 0.1]} color="#fff4e6" intensity={1.5} distance={2.5} />
+          <PL position={[0, 1.7, 0.1]} color="#fff4e6" intensity={1.5} distance={2.5} />
         </group>
         {/* mic on a stand */}
         <group position={[-0.9, 0, 0.9]}>

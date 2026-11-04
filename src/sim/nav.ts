@@ -16,6 +16,7 @@ const circles: [number, number, number][] = [
   [-6.06, 3.5, 0.2], // mic
   [4.8, 3.2, 0.3], // desk chair
   [4.15, 0.5, 0.26], // tesla coil
+  [-3.8, 3.55, 0.64], // adaptive swarm table
 ]
 const rects: [number, number, number, number][] = [
   [-7, -6.15, -1.8, -0.3], // server racks

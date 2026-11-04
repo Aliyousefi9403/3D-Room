@@ -5,6 +5,7 @@ import { RoundedBox } from '@react-three/drei'
 import { Hotspot } from '../Hotspot'
 import { canvasTexture, rng } from '../textures'
 import { surgeLevel } from './TeslaCoil'
+import { useRoom } from '../../store'
 
 // window opening in the right wall (x = 7)
 export const WIN = { z0: -0.75, z1: 1.55, y0: 1.375, y1: 3.125 }
@@ -363,6 +364,7 @@ function Outside() {
 }
 
 export function London() {
+  const lite = useRoom((s) => s.lite)
   const zc = (WIN.z0 + WIN.z1) / 2
   const yc = (WIN.y0 + WIN.y1) / 2
   const ww = WIN.z1 - WIN.z0
@@ -402,7 +404,7 @@ export function London() {
             </mesh>
           ))}
         </group>
-        <rectAreaLight args={['#8a7bff', 2.5, ww, wh]} position={[6.9, yc, zc]} rotation={[0, -Math.PI / 2, 0]} />
+        {!lite && <rectAreaLight args={['#8a7bff', 2.5, ww, wh]} position={[6.9, yc, zc]} rotation={[0, -Math.PI / 2, 0]} />}
       </group>
     </Hotspot>
   )

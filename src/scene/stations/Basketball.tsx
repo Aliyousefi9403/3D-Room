@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import { Hotspot } from '../Hotspot'
+import { PL } from '../Light'
 import { Spot } from '../Spot'
 import { canvasTexture } from '../textures'
 import { openLib } from '../../ui/bits'
@@ -270,7 +271,7 @@ function XRay() {
         <planeGeometry args={[0.52, 0.72]} />
         <meshBasicMaterial map={tex} toneMapped={false} color={[1.5, 1.6, 1.8]} />
       </mesh>
-      <pointLight position={[0, 0, 0.3]} color="#9cc8ff" intensity={1.2} distance={1.6} />
+      <PL position={[0, 0, 0.3]} color="#9cc8ff" intensity={1.2} distance={1.6} />
     </group>
   )
 }

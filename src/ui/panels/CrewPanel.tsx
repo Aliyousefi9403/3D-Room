@@ -19,7 +19,7 @@ export function CrewPanel() {
   return (
     <div>
       <p className="lede">
-        A small project that lives in this room. Its five devices make a little network, and three agents defend it in real time: <b style={{ color: '#8fb3ff' }}>Sentry</b> detects, <b style={{ color: '#f5c26b' }}>Analyst</b> correlates and triages, <b style={{ color: '#3ddc97' }}>Medic</b> contains. When it’s quiet, two of them play 1v1 on the court.
+        A small project that lives in this room. Its five devices make a little network, and three agents defend it in real time: <b style={{ color: '#8fb3ff' }}>Sentry</b> detects, <b style={{ color: '#f5c26b' }}>Analyst</b> correlates and triages, <b style={{ color: '#3ddc97' }}>Medic</b> contains. The glowing table is its live network map: red packets are attack traffic coming in from the internet. When it’s quiet, two of the agents play 1v1 on the court.
       </p>
       <div className="stats">
         <div>

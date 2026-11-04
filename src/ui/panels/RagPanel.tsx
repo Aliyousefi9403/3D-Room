@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ragLab } from '../../content'
 import { Section, KV, Bullets, Links, Bars } from '../bits'
+import { SpotThePoison } from './SpotThePoison'
 
 type KB = 'clean' | 'poisoned'
 type Def = 'none' | 'filter' | 'monitor' | 'fallback'
@@ -206,9 +207,12 @@ export function RagLab() {
 export function RagPanel() {
   return (
     <div>
-      <p className="lede">{ragLab.summary}</p>
+      <Section kicker="Your mission" title="Can you spot the poisoned answer?">
+        <SpotThePoison />
+      </Section>
+      <p className="lede" style={{ marginTop: 28 }}>{ragLab.summary}</p>
       <Links links={ragLab.links} />
-      <Section kicker="Try it" title="Poison the knowledge base">
+      <Section kicker="Go deeper" title="Poison the knowledge base yourself">
         <RagLab />
       </Section>
       <Section kicker="Result" title="Judged answer correctness">

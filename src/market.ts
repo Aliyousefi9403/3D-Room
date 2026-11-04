@@ -12,6 +12,8 @@ export type Feed = {
   status: 'connecting' | 'live' | 'delayed' | 'simulated'
   source: string
   last: number
+  /** wall-clock ms of the last real trade or ticker */
+  lastTick: number
   change24?: number
   ind: Indicators
 }
@@ -23,8 +25,8 @@ export type Product = (typeof products)[number]
 
 const empty = (): Indicators => ({ ema20: [], ema50: [], rsi: [], macd: [], signal: [], bbU: [], bbL: [], bbM: [] })
 export const feeds: Record<Product, Feed> = {
-  'BTC-USD': { product: 'BTC-USD', candles: [], trades: [], status: 'connecting', source: '', last: 0, ind: empty() },
-  'ETH-USD': { product: 'ETH-USD', candles: [], trades: [], status: 'connecting', source: '', last: 0, ind: empty() },
+  'BTC-USD': { product: 'BTC-USD', candles: [], trades: [], status: 'connecting', source: '', last: 0, lastTick: 0, ind: empty() },
+  'ETH-USD': { product: 'ETH-USD', candles: [], trades: [], status: 'connecting', source: '', last: 0, lastTick: 0, ind: empty() },
 }
 
 // ── indicators ───────────────────────────────────────────────────────────────
@@ -125,6 +127,7 @@ async function history(p: Product): Promise<boolean> {
 function applyTick(p: Product, price: number, size: number, side: 'buy' | 'sell', t = Date.now()) {
   const f = feeds[p]
   f.last = price
+  if (f.status !== 'simulated') f.lastTick = Date.now()
   f.trades.push({ t, price, size, side })
   if (f.trades.length > 40) f.trades.shift()
   const minute = Math.floor(t / 60000) * 60000
@@ -197,6 +200,43 @@ function socket() {
   }, 400)
 }
 
+/** Is the price fresh? True only if a real update arrived in the last 15 s. */
+export const isLive = (f: Feed) => f.status !== 'simulated' && Date.now() - f.lastTick < 15000
+export const ago = (f: Feed) => (f.lastTick ? Math.max(0, Math.round((Date.now() - f.lastTick) / 1000)) : null)
+
+/** Fallback when the websocket is blocked or quiet: poll REST tickers. */
+function poll() {
+  setInterval(async () => {
+    for (const p of products) {
+      const f = feeds[p]
+      if (f.status === 'simulated' || Date.now() - f.lastTick < 6000) continue
+      try {
+        const r = await fetch('https://api.exchange.coinbase.com/products/' + p + '/ticker', { cache: 'no-store' })
+        const j = await r.json()
+        if (!j.price) throw new Error('no price')
+        f.source = 'Coinbase REST'
+        f.status = 'live'
+        applyTick(p, +j.price, +j.size || 0, 'buy')
+      } catch {
+        try {
+          const pair = p === 'BTC-USD' ? 'XBTUSD' : 'ETHUSD'
+          const r = await fetch('https://api.kraken.com/0/public/Ticker?pair=' + pair, { cache: 'no-store' })
+          const j = await r.json()
+          const v = Object.values(j.result)[0] as { c: string[]; o: string }
+          f.source = 'Kraken REST'
+          f.status = 'live'
+          f.change24 = (+v.c[0] - +v.o) / +v.o
+          applyTick(p, +v.c[0], +v.c[1] || 0, 'buy')
+        } catch {
+          /* both down: keep the last known price, shown as stale */
+        }
+      }
+      compute(f)
+    }
+    emit()
+  }, 3000)
+}
+
 export function startMarket() {
   if (started) return
   started = true
@@ -209,5 +249,6 @@ export function startMarket() {
     })
     emit()
     socket()
+    poll()
   })
 }

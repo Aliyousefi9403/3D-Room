@@ -4,6 +4,7 @@ import { useLoader } from '@react-three/fiber'
 import { profile } from '../../content'
 import { RoundedBox, Float } from '@react-three/drei'
 import { Hotspot } from '../Hotspot'
+import { PL } from '../Light'
 import { canvasTexture } from '../textures'
 import { Plant } from '../Room'
 
@@ -146,7 +147,7 @@ export function AboutDesk() {
             <coneGeometry args={[0.09, 0.14, 24, 1, true]} />
             <meshStandardMaterial color="#1d3b30" side={2} metalness={0.4} roughness={0.4} />
           </mesh>
-          <pointLight position={[0.28, 0.33, 0.12]} color="#ffc27a" intensity={3.5} distance={2.4} castShadow={false} />
+          <PL position={[0.28, 0.33, 0.12]} color="#ffc27a" intensity={3.5} distance={2.4} castShadow={false} />
         </group>
         {/* mug + books */}
         <mesh castShadow position={[-0.35, 0.83, -0.2]}>

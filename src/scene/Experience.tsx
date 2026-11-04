@@ -1,5 +1,5 @@
-import { Suspense, useRef } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Suspense, useEffect, useRef } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Environment, Lightformer, AdaptiveDpr, Preload, PerformanceMonitor } from '@react-three/drei'
 import { EffectComposer, Bloom, Vignette, N8AO, Selection, Outline, SMAA, ToneMapping } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
@@ -13,6 +13,7 @@ import { SecurityLab } from './stations/SecurityLab'
 import { MonitorWall } from './stations/MonitorWall'
 import { AdaptiveSwarm } from './stations/AdaptiveSwarm'
 import { NightWatch } from './stations/NightWatch'
+import { NetworkTable } from './stations/NetworkTable'
 import { London } from './stations/London'
 import { QuantumCorner } from './stations/QuantumCorner'
 import { Studio } from './stations/Studio'
@@ -85,6 +86,16 @@ function Effects({ lite }: { lite: boolean }) {
   )
 }
 
+/** Without post-processing, the renderer does the tone mapping itself. */
+function ToneMap({ lite }: { lite: boolean }) {
+  const gl = useThree((s) => s.gl)
+  useEffect(() => {
+    gl.toneMapping = lite ? THREE.AgXToneMapping : THREE.NoToneMapping
+    gl.toneMappingExposure = lite ? 1.15 : 1
+  }, [gl, lite])
+  return null
+}
+
 export function Experience() {
   const go = useRoom((s) => s.go)
   const station = useRoom((s) => s.station)
@@ -93,14 +104,17 @@ export function Experience() {
   return (
     <Canvas
       shadows={!lite}
-      dpr={lite ? 1 : [1, 2]}
+      dpr={lite ? [1, 1.25] : [1, 1.75]}
       camera={{ fov: 38, near: 0.1, far: 80, position: [6, 10, 20] }}
       gl={{ antialias: false, powerPreference: 'high-performance', toneMapping: THREE.NoToneMapping }}
+      onCreated={({ gl }) => {
+        if (location.search.includes('debug')) Object.assign(window, { __gl: gl })
+      }}
       onPointerMissed={() => station !== 'overview' && !useRoom.getState().reader && !useRoom.getState().dragging && go('overview')}
     >
       <color attach="background" args={['#05060a']} />
       <fog attach="fog" args={['#05060a', 16, 34]} />
-      <PerformanceMonitor onDecline={() => setLite(true)} flipflops={2} />
+      <PerformanceMonitor onDecline={() => !useRoom.getState().lite && setLite(true)} flipflops={2} />
       <Suspense fallback={null}>
         <Environment resolution={256} frames={1}>
           <Lightformer intensity={1.2} color="#ffd2a1" position={[0, 5, -9]} scale={[10, 3, 1]} />
@@ -119,10 +133,12 @@ export function Experience() {
           <Basketball />
           <AboutDesk />
           <NightWatch />
+          <NetworkTable />
           <London />
           <QuantumCorner />
           <Studio />
-          <Effects lite={lite} />
+          {!lite && <Effects lite={false} />}
+          <ToneMap lite={lite} />
         </Selection>
         <Preload all />
       </Suspense>

@@ -12,7 +12,7 @@ export const views: Record<StationId, View> = {
   quant: { pos: [-2.6, 2.6, 5.6], target: [-3.0, 1.05, 1.4] },
   rag: { pos: [-1.6, 2.3, 0.6], target: [-6.4, 1.45, -1.05] },
   rv: { pos: [0.6, 2.1, 1.6], target: [0.6, 1.9, -4.9] },
-  swarm: { pos: [1.7, 3.0, 4.1], target: [1.7, 1.15, 0.7] },
+  swarm: { pos: [-2.4, 2.05, 6.1], target: [-3.8, 0.95, 3.55] },
   basketball: { pos: [2.6, 2.3, 1.3], target: [5.2, 2.15, -4.3] },
   crew: { pos: [0.4, 6.8, 7.4], target: [0.6, 0.6, -1.2] },
   window: { pos: [3.7, 2.0, 0.55], target: [8.0, 2.35, 0.3] },

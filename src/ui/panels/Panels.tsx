@@ -2,15 +2,19 @@ import { useEffect, useReducer, useState } from 'react'
 import { rv, quantDesk, internship, basketball, quantum, studio, view } from '../../content'
 import { useRoom } from '../../store'
 import { Section, KV, Bullets, Links, T } from '../bits'
-import { feeds, onMarket, read } from '../../market'
+import { feeds, onMarket, read, isLive, ago } from '../../market'
 import { qubit, onQubit, measure, gate, prepare, p0 } from '../../sim/qubit'
 import { cvTracks } from '../../sim/courtvision'
 
 const useMarket = () => {
   const [, f] = useReducer((x) => x + 1, 0)
-  useEffect(() => onMarket(f) as () => void, [])
+  useEffect(() => {
+    const off = onMarket(f)
+    const id = setInterval(f, 1000)
+    return () => (off(), clearInterval(id))
+  }, [])
 }
-const money = (v: number) => (v ? v.toLocaleString('en-GB', { maximumFractionDigits: 2, minimumFractionDigits: 2 }) : '…')
+const money = (v: number) => (v ? '$' + v.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 }) : '…')
 
 function LiveStrip() {
   useMarket()
@@ -19,7 +23,7 @@ function LiveStrip() {
   const r = read(b)
   return (
     <div className="live">
-      <div className={`live-dot s-${b.status}`}>{b.status === 'live' ? 'LIVE' : b.status.toUpperCase()}</div>
+      <div className={`live-dot s-${isLive(b) ? 'live' : b.status === 'simulated' ? 'simulated' : 'stale'}`}>{isLive(b) ? 'LIVE' : b.status === 'simulated' ? 'SIMULATED' : 'STALE'}</div>
       <div>
         <span>BTC-USD</span>
         <b>{money(b.last)}</b>
@@ -37,7 +41,9 @@ function LiveStrip() {
           <em className={r.trend > 0 ? 'up' : 'dn'}>{r.trend > 0 ? 'uptrend' : 'downtrend'}</em>
         </div>
       )}
-      <p className="fine">Streaming from {b.source || '…'} into your browser. Indicators are computed live from 1-minute candles.</p>
+      <p className="fine">
+        Streaming from {b.source || '…'} into your browser{ago(b) !== null ? ', last update ' + ago(b) + 's ago' : ''}. Prices in US dollars. Indicators are computed live from 1-minute candles.
+      </p>
     </div>
   )
 }
@@ -192,7 +198,7 @@ export function SwarmPanel() {
             </li>
           ))}
         </ol>
-        <p className="fine">The hologram is fed by the same live BTC stream: the ribbon is the last two hours of 1-minute candles, and the core glows with the indicators’ combined read. It illustrates the idea; Adaptive Swarm’s model and data stay private.</p>
+        <p className="fine">The flock on this table is fed by the live BTC stream: when the indicators read bullish it tightens and turns green, when bearish it scatters and turns red. The ribbon around the rim is the last 100 minutes of 1-minute candles. It illustrates the idea of a self-adapting system; Adaptive Swarm’s own model and data stay private.</p>
       </Section>
       <Section kicker="What I did" title="The work">
         <Bullets items={internship.did} />

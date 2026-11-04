@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { useFrame, useThree, useLoader } from '@react-three/fiber'
 import { items, shelves, ShelfId, Item, KIND_LABEL } from '../../content'
 import { canvasTexture, rng } from '../textures'
 import { useRoom } from '../../store'
 import { Hotspot } from '../Hotspot'
+import { PL } from '../Light'
 import { Spot } from '../Spot'
 
 const W = 4.4
@@ -39,7 +40,7 @@ function wrap(c: CanvasRenderingContext2D, text: string, x: number, y: number, m
 }
 
 function spineTexture(it: Item | null, color: string, seed: number) {
-  return canvasTexture(128, 1024, (c, w, h) => {
+  return canvasTexture(64, 512, (c, w, h) => {
     const col = new THREE.Color(color)
     const g = c.createLinearGradient(0, 0, w, 0)
     g.addColorStop(0, `#${col.clone().multiplyScalar(0.55).getHexString()}`)
@@ -48,14 +49,14 @@ function spineTexture(it: Item | null, color: string, seed: number) {
     c.fillStyle = g
     c.fillRect(0, 0, w, h)
     const r = rng(seed)
-    for (let i = 0; i < 1500; i++) {
+    for (let i = 0; i < 400; i++) {
       c.fillStyle = `rgba(0,0,0,${r() * 0.12})`
-      c.fillRect(r() * w, r() * h, 2, 2)
+      c.fillRect(r() * w, r() * h, 1, 1)
     }
     const idea = it?.kind === 'idea'
     const gold = idea ? 'rgba(200,180,140,0.45)' : '#d6b46f'
     c.fillStyle = gold
-    for (const y of [60, 74, h - 74, h - 60]) c.fillRect(10, y, w - 20, 4)
+    for (const y of [30, 37, h - 37, h - 30]) c.fillRect(5, y, w - 10, 2)
     if (!it) return
     c.save()
     c.translate(w / 2, h / 2)
@@ -64,9 +65,9 @@ function spineTexture(it: Item | null, color: string, seed: number) {
     c.textAlign = 'center'
     c.textBaseline = 'middle'
     const title = clean(it.title)
-    let size = 54
+    let size = 27
     c.font = `500 ${size}px Fraunces, Georgia, serif`
-    while (c.measureText(title).width > h - 220 && size > 22) c.font = `500 ${(size -= 2)}px Fraunces, Georgia, serif`
+    while (c.measureText(title).width > h - 110 && size > 11) c.font = `500 ${(size -= 2)}px Fraunces, Georgia, serif`
     c.fillText(title, 0, 0)
     c.restore()
   })
@@ -201,7 +202,7 @@ const tmpQ = new THREE.Quaternion()
 
 function Piece({ s, shelfY, firstPage }: { s: Slot; shelfY: number; firstPage: THREE.Texture | null }) {
   const spine = useMemo(() => spineTexture(s.item, s.color, s.seed), [s])
-  const cover = useMemo(() => (s.item ? coverTexture(s.item) : null), [s])
+  const [cover, setCover] = useState<THREE.Texture | null>(null)
   const outer = useRef<THREE.Group>(null)
   const [hover, setHover] = useState(false)
   const station = useRoom((st) => st.station)
@@ -215,12 +216,28 @@ function Piece({ s, shelfY, firstPage }: { s: Slot; shelfY: number; firstPage: T
   const home = useMemo(() => (s.shape === 'book' ? new THREE.Vector3(s.x + (s.tilt ? 0.05 : 0), shelfY + s.h / 2, -D / 2 + s.d / 2 + 0.06) : new THREE.Vector3(s.x, shelfY, 0)), [s, shelfY])
   const homeQ = useMemo(() => new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, s.tilt)), [s.tilt])
   const show = useRef(0)
+  const rest = useRef(true)
+  // the cover is only drawn the first time the item is pulled out
+  useEffect(() => {
+    if (active && !cover && s.item) setCover(coverTexture(s.item))
+  }, [active, cover, s.item])
 
   useFrame((_, dt) => {
     const g = outer.current
     if (!g) return
     show.current = THREE.MathUtils.damp(show.current, active ? 1 : 0, 5, dt)
     const k = show.current
+    // sitting on the shelf: nothing to animate
+    if (k < 0.001 && !active && !hover) {
+      if (!rest.current) {
+        g.position.copy(home)
+        g.quaternion.copy(homeQ)
+        g.scale.setScalar(1)
+        rest.current = true
+      }
+      return
+    }
+    rest.current = false
     // presentation pose: in front of the shelf, facing the camera, cover out
     const pres = tmpV.set(0.15, 1.75, D / 2 + 0.75)
     const e = k * k * (3 - 2 * k)
@@ -242,7 +259,7 @@ function Piece({ s, shelfY, firstPage }: { s: Slot; shelfY: number; firstPage: T
     const body = new THREE.MeshStandardMaterial({ color: s.item ? s.color : new THREE.Color(s.color).multiplyScalar(0.7), roughness: 0.6, transparent: idea, opacity: idea ? 0.6 : 1 })
     const pages = new THREE.MeshStandardMaterial({ color: '#e8dcc4', roughness: 0.9 })
     const sp = new THREE.MeshStandardMaterial({ map: spine, roughness: 0.5, transparent: idea, opacity: idea ? 0.65 : 1, emissiveMap: s.item && !idea ? spine : null, emissive: new THREE.Color(s.item && !idea ? '#fff' : '#000'), emissiveIntensity: s.item && !idea ? 0.3 : 0 })
-    const front = cover ? new THREE.MeshStandardMaterial({ map: firstPage ?? cover, roughness: 0.7, color: firstPage ? '#b8b4ac' : '#fff', emissive: '#fff', emissiveMap: firstPage ?? cover, emissiveIntensity: firstPage ? 0.02 : 0.12 }) : body
+    const front = cover || firstPage ? new THREE.MeshStandardMaterial({ map: firstPage ?? cover, roughness: 0.7, color: firstPage ? '#b8b4ac' : '#fff', emissive: '#fff', emissiveMap: firstPage ?? cover, emissiveIntensity: firstPage ? 0.02 : 0.12 }) : body
     // box faces: +x (front cover), -x (back), +y, -y, +z (spine), -z
     return [front, body, pages, pages, sp, pages]
   }, [spine, cover, firstPage, s, idea])
@@ -306,6 +323,34 @@ function Plaque({ label }: { label: string }) {
       <planeGeometry args={[0.8, 0.1]} />
       <meshStandardMaterial map={tex} metalness={0.7} roughness={0.35} />
     </mesh>
+  )
+}
+
+/** Every filler book on every shelf in one instanced draw, sharing one texture. */
+function FillerBooks({ rows }: { rows: { slots: Slot[]; shelfY: number }[] }) {
+  const mesh = useRef<THREE.InstancedMesh>(null)
+  const fill = useMemo(() => rows.flatMap((r) => r.slots.filter((s) => !s.item).map((s) => ({ s, y: r.shelfY }))), [rows])
+  const tex = useMemo(() => spineTexture(null, '#8a8a8a', 5), [])
+  useLayoutEffect(() => {
+    const m = mesh.current!
+    const o = new THREE.Object3D()
+    const c = new THREE.Color()
+    fill.forEach(({ s, y }, i) => {
+      o.position.set(s.x + (s.tilt ? 0.05 : 0), y + s.h / 2, -D / 2 + s.d / 2 + 0.06)
+      o.rotation.set(0, 0, s.tilt)
+      o.scale.set(s.w, s.h, s.d)
+      o.updateMatrix()
+      m.setMatrixAt(i, o.matrix)
+      m.setColorAt(i, c.set(s.color).multiplyScalar(1.1))
+    })
+    m.instanceMatrix.needsUpdate = true
+    if (m.instanceColor) m.instanceColor.needsUpdate = true
+  }, [fill])
+  return (
+    <instancedMesh ref={mesh} args={[undefined, undefined, fill.length]} receiveShadow>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial map={tex} roughness={0.65} />
+    </instancedMesh>
   )
 }
 
@@ -394,14 +439,13 @@ export function Library() {
                   <meshBasicMaterial color={[3, 2.2, 1.4]} toneMapped={false} />
                 </mesh>
               </group>
-              {row.slots.map((s, k) => (
-                <Piece key={k} s={s} shelfY={shelfY} firstPage={s.item?.id === 'aegisrag' ? paperCover : null} />
-              ))}
+              {row.slots.map((s, k) => (s.item ? <Piece key={k} s={s} shelfY={shelfY} firstPage={s.item.id === 'aegisrag' ? paperCover : null} /> : null))}
             </group>
           )
         })}
-        <Spot position={[0, H + 1.4, 2.6]} target={[0, 1.6, 0]} angle={0.62} penumbra={0.75} intensity={30} distance={10} color="#ffd9a8" />
-        <pointLight position={[0.15, 1.9, D / 2 + 1.4]} intensity={2.5} distance={3} color="#ffe2b8" />
+        <FillerBooks rows={rows.map((r, i) => ({ slots: r.slots, shelfY: 0.14 + (ROWS.length - 1 - i) * ROW_H + 0.03 }))} />
+        <Spot keep position={[0, H + 1.4, 2.6]} target={[0, 1.6, 0]} angle={0.62} penumbra={0.75} intensity={30} distance={10} color="#ffd9a8" />
+        <PL position={[0.15, 1.9, D / 2 + 1.4]} intensity={2.5} distance={3} color="#ffe2b8" />
       </group>
     </Hotspot>
   )

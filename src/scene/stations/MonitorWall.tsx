@@ -3,7 +3,9 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import { Hotspot } from '../Hotspot'
+import { PL } from '../Light'
 import { Spot } from '../Spot'
+import { every } from '../Light'
 
 const W = 1800
 const H = 1000
@@ -130,7 +132,7 @@ export function MonitorWall() {
       s.step++
       if (s.step % LOOP.length === 4) s.q = Math.min(6, s.q + 1)
     }
-    if (s.frame < 1 / 12) return
+    if (s.frame < every(1 / 10)) return
     s.frame = 0
     draw(ctx, s.step, clock.elapsedTime, s.q)
     tex.needsUpdate = true
@@ -162,7 +164,7 @@ export function MonitorWall() {
             <meshBasicMaterial color={i % 7 === 3 ? [3, 0.3, 0.4] : i % 3 ? [0.4, 1.2, 2.5] : [0.3, 2.5, 1.2]} toneMapped={false} />
           </mesh>
         ))}
-        <pointLight position={[0, 2.3, 0.8]} color="#6f9bff" intensity={4} distance={4} />
+        <PL position={[0, 2.3, 0.8]} color="#6f9bff" intensity={4} distance={4} />
         <Spot position={[0, 4.1, 1.6]} target={[0, 2.2, 0]} angle={0.7} penumbra={0.9} intensity={6} distance={6} color="#b7c8ff" />
       </group>
     </Hotspot>

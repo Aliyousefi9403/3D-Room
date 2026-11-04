@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { Float, RoundedBox } from '@react-three/drei'
 import { Hotspot } from '../Hotspot'
+import { PL } from '../Light'
 import { canvasTexture } from '../textures'
 
 const UNITS = 16
@@ -17,6 +18,31 @@ function Rack({ z, poisonedUnit, seed }: { z: number; poisonedUnit: number; seed
   const colors = useMemo(() => new Float32Array(count * 3), [count])
   const dummy = useMemo(() => new THREE.Object3D(), [])
   const uh = (RH - 0.2) / UNITS
+  const front = useMemo(
+    () =>
+      canvasTexture(128, 448, (c, w, h) => {
+        // canvas u runs from world z = +RW/2 (left) to -RW/2 (right)
+        const U = (z: number) => ((RW / 2 - z) / RW) * w
+        const V = (y: number) => (1 - y / RH) * h
+        c.fillStyle = '#090b10'
+        c.fillRect(0, 0, w, h)
+        for (let u = 0; u < UNITS; u++) {
+          const y0 = 0.12 + u * uh + uh * 0.07
+          const y1 = y0 + uh * 0.86
+          c.fillStyle = u === poisonedUnit ? '#3a1219' : '#262b37'
+          c.fillRect(U(RW / 2 - 0.03), V(y1), U(-RW / 2 + 0.03) - U(RW / 2 - 0.03), V(y0) - V(y1))
+          c.fillStyle = 'rgba(255,255,255,0.08)'
+          c.fillRect(U(RW / 2 - 0.03), V(y1), U(-RW / 2 + 0.03) - U(RW / 2 - 0.03), 1)
+          c.fillStyle = '#05060a'
+          for (let k = 0; k < 7; k++) {
+            const z = 0.06 + k * 0.03
+            const ym = (y0 + y1) / 2
+            c.fillRect(U(z + 0.006), V(ym + uh * 0.25), U(z - 0.006) - U(z + 0.006), V(ym - uh * 0.25) - V(ym + uh * 0.25))
+          }
+        }
+      }),
+    [poisonedUnit, uh],
+  )
 
   useLayoutEffect(() => {
     const m = leds.current!
@@ -55,27 +81,17 @@ function Rack({ z, poisonedUnit, seed }: { z: number; poisonedUnit: number; seed
       <RoundedBox args={[RD, RH, RW]} radius={0.015} position={[0, RH / 2, 0]} castShadow receiveShadow>
         <meshStandardMaterial color="#0d0f14" metalness={0.75} roughness={0.35} />
       </RoundedBox>
-      {Array.from({ length: UNITS }).map((_, u) => (
-        <group key={u} position={[RD / 2 + 0.001, 0.12 + u * uh + uh / 2, 0]}>
-          <mesh>
-            <boxGeometry args={[0.004, uh * 0.86, RW - 0.06]} />
-            <meshStandardMaterial color={u === poisonedUnit ? '#2a0d12' : '#171a22'} metalness={0.6} roughness={0.4} />
-          </mesh>
-          {/* vent slats */}
-          {[0, 1, 2, 3, 4, 5, 6].map((k) => (
-            <mesh key={k} position={[0.003, 0, 0.06 + k * 0.03]}>
-              <boxGeometry args={[0.002, uh * 0.5, 0.012]} />
-              <meshStandardMaterial color="#05060a" />
-            </mesh>
-          ))}
-          {u === poisonedUnit && (
-            <mesh position={[0.004, 0, 0.14]}>
-              <boxGeometry args={[0.002, uh * 0.7, 0.28]} />
-              <meshBasicMaterial ref={bad} toneMapped={false} transparent opacity={0.85} />
-            </mesh>
-          )}
-        </group>
-      ))}
+      {/* all 16 unit faces and their vents in one textured plane (one draw call) */}
+      <mesh position={[RD / 2 + 0.002, RH / 2, 0]} rotation={[0, Math.PI / 2, 0]}>
+        <planeGeometry args={[RW, RH]} />
+        <meshStandardMaterial map={front} metalness={0.55} roughness={0.45} />
+      </mesh>
+      {poisonedUnit >= 0 && (
+        <mesh position={[RD / 2 + 0.004, 0.12 + poisonedUnit * uh + uh / 2, 0.14]}>
+          <boxGeometry args={[0.002, uh * 0.7, 0.28]} />
+          <meshBasicMaterial ref={bad} toneMapped={false} transparent opacity={0.85} />
+        </mesh>
+      )}
       <instancedMesh ref={leds} args={[undefined, undefined, count]}>
         <boxGeometry args={[0.006, 0.012, 0.014]} />
         <meshBasicMaterial toneMapped={false} />
@@ -153,8 +169,8 @@ export function SecurityLab() {
           <boxGeometry args={[RD * 0.8, 0.08, RW * 2.2]} />
           <meshStandardMaterial color="#14171e" metalness={0.7} roughness={0.4} />
         </mesh>
-        <pointLight position={[1.0, 1.2, -0.3]} color="#ff4d6a" intensity={2.5} distance={3} />
-        <pointLight position={[1.0, 1.4, 0.4]} color="#4d8bff" intensity={2.5} distance={3.5} />
+        <PL position={[1.0, 1.2, -0.3]} color="#ff4d6a" intensity={2.5} distance={3} />
+        <PL position={[1.0, 1.4, 0.4]} color="#4d8bff" intensity={2.5} distance={3.5} />
       </group>
     </Hotspot>
   )

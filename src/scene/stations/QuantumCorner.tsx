@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import { Hotspot } from '../Hotspot'
+import { PL } from '../Light'
 import { qubit, measure } from '../../sim/qubit'
 import { useRoom } from '../../store'
 import { TeslaCoil, } from './TeslaCoil'
@@ -111,7 +112,7 @@ function Bloch() {
         <sphereGeometry args={[0.3, 16, 16]} />
         <meshBasicMaterial color={[4, 3, 6]} transparent opacity={0.5} toneMapped={false} />
       </mesh>
-      <pointLight position={[0, 0, 0]} color="#9a7bff" intensity={1.5} distance={2.5} />
+      <PL position={[0, 0, 0]} color="#9a7bff" intensity={1.5} distance={2.5} />
     </group>
   )
 }
