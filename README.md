@@ -9,7 +9,7 @@ An interactive 3D room holding my research, systems and story. Every object is a
 | Station | What's there |
 |---|---|
 | **Library** | Five shelves: Research, Red Team, Things I Built, Markets & ML, Ideas & Curiosities. Scroll over the shelf and each item slides out and turns to face you; some are books, some are objects (the Hack The Box cube, the quantum atom, the Batis coin, the UKMT medal). |
-| **Paper reader** | *Reading the Poison* (Yousefi, Asad & Komninos), page by page with a flip animation, plus PDF download. |
+| **Paper reader** | *Detecting Word-Substitution Poisoning of a RAG Knowledge Base* (Yousefi, Komninos & Asad, arXiv:2611.27410), page by page with a flip animation, plus PDF download. |
 | **Security Lab** | AegisRAG: an interactive poisoning lab with real results and detector AUROCs. |
 | **Monitor Wall** | AegisRAG part II: the runtime-verification monitor (φ1–φ3) as a live status wall. |
 | **Night Watch** | A real mini-SOC. Five devices in the room form a network with live traffic; five detection rules (MITRE-mapped) run over sliding windows; three agents (Sentry, Analyst, Medic) walk to the device, triage and contain. Visitors can launch attacks. When it's quiet, two agents play 1v1 basketball. |

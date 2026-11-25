@@ -116,7 +116,7 @@ export function RvPanel() {
     <div>
       <div className="chips">
         <span className="chip k-paper">AegisRAG · part II</span>
-        <span className="chip">Paper §V-G</span>
+        <span className="chip">Paper §5.6</span>
       </div>
       <p className="lede">{rv.summary}</p>
       <Links links={rv.links} />

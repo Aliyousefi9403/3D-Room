@@ -4,18 +4,19 @@
 <style>
 @page { size: A4; margin: 0; }
 * { box-sizing: border-box; }
-body { margin: 0; font-family: Lato, Carlito, Calibri, sans-serif; font-size: 8.85pt; line-height: 1.19; color: #111; }
-.page { width: 210mm; height: 297mm; padding: 7mm 10.5mm 3mm; }
+body { margin: 0; font-family: Lato, Carlito, Calibri, sans-serif; font-size: 8.35pt; line-height: 1.15; color: #111; }
+.page { width: 210mm; height: 297mm; padding: 6mm 10.5mm 3mm; }
 h1 { text-align: center; font-size: 17pt; letter-spacing: 0.02em; margin: 0; }
 .contact { text-align: center; font-size: 8.7pt; margin: 1pt 0 0; }
 a { color: #1a4f8b; text-decoration: underline; text-underline-offset: 1.5pt; text-decoration-thickness: 0.5pt; }
-h2 { font-size: 10pt; margin: 3.8pt 0 1.2pt; padding-bottom: 1pt; border-bottom: 0.8pt solid #222; }
+h2 { font-size: 10pt; margin: 2.8pt 0 1pt; padding-bottom: 1pt; border-bottom: 0.8pt solid #222; }
 .row { display: flex; justify-content: space-between; font-weight: 700; margin-top: 2.2pt; }
 .sub { font-style: italic; margin: 0.5pt 0 0 7pt; }
 ul { margin: 0.5pt 0 0; padding-left: 17pt; }
 li { margin: 0; }
 p { margin: 1pt 0 0 7pt; }
 .note { font-style: italic; margin: 1pt 0 1pt 7pt; }
+.hnote { font-size: 8pt; font-weight: 400; font-style: italic; }
 b { font-weight: 700; }
 </style></head>
 <body><div class="page">
@@ -24,7 +25,10 @@ b { font-weight: 700; }
 <div class="contact"><b>Interactive portfolio:</b> <a href="https://aliyousefi9403.github.io/3D-Room/">aliyousefi9403.github.io/3D-Room</a></div>
 
 <h2>PROFILE</h2>
-<p>Final-year Computer Science student focused on AI security and applied AI. Lead project is AegisRAG, research on detecting knowledge base poisoning in RAG systems, written up as a preprint with Dr Hafizul Asad and Dr Nikos Komninos. Currently on the Hack The Box AI Red Teamer path alongside CompTIA Security+.</p>
+<p>Final-year Computer Science student focused on AI security and applied AI. Lead project AegisRAG, on detecting knowledge base poisoning in RAG systems, is on arXiv and being extended for IEEE TDSC. On the Hack The Box AI Red Teamer path and CompTIA Security+.</p>
+
+<h2>PUBLICATIONS</h2>
+<p><b>A. Yousefi</b>, N. Komninos and H. Asad. &ldquo;Detecting Word-Substitution Poisoning of a RAG Knowledge Base with Relative Entropy and Runtime Verification.&rdquo; <a href="https://arxiv.org/abs/2611.27410"><i>arXiv:2611.27410</i></a> [cs.CR], Nov 2026 (preprint).</p>
 
 <h2>EXPERIENCE</h2>
 <div class="row"><span>AI Engineering Intern | Adaptive Swarm</span><span>2026 – Present</span></div>
@@ -43,16 +47,27 @@ b { font-weight: 700; }
 <li>Closed 4 international B2B deals across Italy, Germany, China and the Middle East, negotiating terms in a second language.</li>
 </ul>
 
-<h2>PROJECTS</h2>
-<div class="note">Repositories private for security reasons unless linked. Walkthrough or live demo available on request.</div>
+<h2>PROJECTS <span class="hnote">(repositories private for security reasons unless linked; walkthrough or live demo on request)</span></h2>
 <div class="row"><span>AegisRAG | Detecting Knowledge Base Poisoning in RAG Systems</span><span>2026 – 2027</span></div>
-<div class="sub">Final Year Individual Project | Python, FastAPI, Qdrant, Next.js | Preprint: “Reading the Poison”, with Dr Hafizul Asad and Dr Nikos Komninos</div>
+<div class="sub">Final Year Individual Project | Python, PyTorch, FastAPI, Qdrant, Next.js | <a href="https://arxiv.org/abs/2611.27410">arXiv:2611.27410</a> | <a href="https://github.com/Aliyousefi9403/dissertation-RAG">code</a></div>
 <ul>
 <li>Engineered a RAG security testbed over 200 MITRE ATT&amp;CK and CAPEC passages and 44 benchmark questions; showed synonym-swap poisoning cuts correctness by 22% (0.714 to 0.555), mainly by displacing evidence.</li>
 <li>Created a relative-entropy detector reaching 0.95 AUROC that names the swapped word in 22 of 27 flagged passages.</li>
 <li>Halved poisoned text reaching the model (41% to 20% of questions) with a filter that costs no measurable clean accuracy.</li>
 <li>Built an LTL runtime monitor with quarantine memory, cutting exposure to edited text from 41% to 26% and wrong answers to zero.</li>
 <li>Verified all 73 headline claims against 5,000 SHA-256 checksummed run records, backed by 285 passing tests.</li>
+</ul>
+<div class="row"><span>MiniGPT | GPT from Scratch on the Shahnameh, Audited for Training-Data Privacy</span><span><a href="https://github.com/Aliyousefi9403/MiniGPT">code</a> | 2026</span></div>
+<ul>
+<li>Hand-wrote a 3.5M-parameter GPT, tokenizer and optimiser (1.79 vs 2.13 bits/char for n-grams); membership attacks reach 0.94 AUC.</li>
+</ul>
+<div class="row"><span>MalwareVision | Malware Family Classification from Binary Images (PyTorch)</span><span><a href="https://github.com/Aliyousefi9403/MalwareVision">code</a> | 2026</span></div>
+<ul>
+<li>Found 14.1% duplicates in Malimg that inflate macro-F1 from 0.87 to 0.99; 0.97 on a fair split; unseen families detected at 0.93 AUROC.</li>
+</ul>
+<div class="row"><span>Ouroboros | Snake AI with Reinforcement Learning and Provable Move Analysis</span><span><a href="https://github.com/Aliyousefi9403/ouroboros">code</a> | 2026</span></div>
+<ul>
+<li>Learned value function plus search lifted the mean score from 19.2 to 67.4 over 200 held-out games; a solver proves when a move is fatal.</li>
 </ul>
 <div class="row"><span>The Room | Interactive 3D Portfolio with a Live Multi-Agent SOC</span><span>2026</span></div>
 <div class="sub">TypeScript, React Three Fiber, WebGL, WebSockets | <a href="https://aliyousefi9403.github.io/3D-Room/">aliyousefi9403.github.io/3D-Room</a></div>
@@ -63,8 +78,7 @@ b { font-weight: 700; }
 </ul>
 <div class="row"><span>CourtVision | Live Basketball Match Analyser</span><span></span></div>
 <ul>
-<li>Built a machine-learning system that tracks every player in a live game, re-identifies each one and recognises what they are doing.</li>
-<li>Generates post-game analysis per player and a scouting report on the next opponent, with recommendations on how to play them.</li>
+<li>Built an ML system that tracks, re-identifies and recognises the actions of every player live, with player analysis and opponent scouting.</li>
 </ul>
 <div class="row"><span>Aris | Voice and Gesture Controlled System Supervisor</span><span>2026</span></div>
 <ul>
@@ -72,8 +86,7 @@ b { font-weight: 700; }
 </ul>
 <div class="row"><span>quantdesk | Systematic Trading Research Stack</span><span>2026</span></div>
 <ul>
-<li>Engineered the research harness: exchange data layer, DuckDB and Parquet store, cost model, backtester and walk-forward tests.</li>
-<li>Coded a multi-asset trend strategy with inverse-volatility sizing and vol targeting, choosing rules over ML (too few regimes).</li>
+<li>Engineered the harness (data layer, DuckDB/Parquet, cost model, backtester, walk-forward tests) and a trend strategy with inverse-vol sizing.</li>
 </ul>
 <div class="row"><span>Pharmacy Ordering and Inventory System | Team Software Project (Project Manager)</span><span>2026</span></div>
 <ul>
